@@ -3,7 +3,7 @@
 import { ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import NavMobile from '@/components/layouts/nav-mobile';
+import NavMobile from '@/components/layout/nav-mobile';
 
 import { Button } from '@d21/design-system/components/ui/button';
 import { useSidebar } from '@d21/design-system/components/ui/sidebar';

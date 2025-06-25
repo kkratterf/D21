@@ -1,9 +1,126 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
+import type { GetStartups, StartupOrder } from '@/types/startup'
+import { PAGE_SIZE, } from '@/types/startup'
 import { createClient } from '@/lib/supabase/server'
 import { Decimal } from 'decimal.js'
 import { checkDirectoryAccess } from './directory'
+
+// Include per i dati utili delle startup
+const includeForUsefullDataStartup = {
+    teamSize: true,
+    fundingStage: true,
+    directory: {
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+        },
+    },
+};
+
+// Funzione per determinare l'ordinamento
+const getOrderBy = (sort: StartupOrder) => {
+    switch (sort) {
+        case "nameAsc":
+            return { name: 'asc' as const };
+        case "nameDesc":
+            return { name: 'desc' as const };
+        case "createdAtAsc":
+            return { createdAt: 'asc' as const };
+        case "createdAtDesc":
+            return { createdAt: 'desc' as const };
+        case "foundedAtAsc":
+            return { foundedAt: 'asc' as const };
+        case "foundedAtDesc":
+            return { foundedAt: 'desc' as const };
+        default:
+            return { name: 'asc' as const };
+    }
+}
+
+// Funzione principale per ottenere startup con paginazione
+export const getStartups = async ({
+    name,
+    tags,
+    fundingStages,
+    teamSizes,
+    locations,
+    isPopular,
+    positionForFeatured,
+    page = 1,
+    sort = "nameAsc"
+}: GetStartups) => {
+    const fullInclude = {
+        ...includeForUsefullDataStartup,
+    };
+
+    const query = {
+        where: {
+            visible: true,
+            isPopular: isPopular,
+            name: name ? {
+                contains: name,
+                mode: 'insensitive' as const
+            } : undefined,
+            tags: tags?.length ? {
+                hasSome: tags
+            } : undefined,
+            fundingStageId: fundingStages?.length ? {
+                in: fundingStages
+            } : undefined,
+            teamSizeId: teamSizes?.length ? {
+                in: teamSizes
+            } : undefined,
+            location: locations?.length ? {
+                in: locations
+            } : undefined
+        },
+        orderBy: getOrderBy(sort),
+        take: PAGE_SIZE,
+        skip: (page - 1) * PAGE_SIZE,
+        include: fullInclude
+    };
+
+    // Fetch startups and count in una transazione per efficienza
+    const [startups, count] = await prisma.$transaction([
+        prisma.startup.findMany(query),
+        prisma.startup.count({ where: query.where })
+    ]);
+
+    const processedStartups = startups.map(startup => ({
+        ...startup,
+        amountRaised: startup.amountRaised ? Number(startup.amountRaised) : null
+    }));
+
+    // Aggiungi startup in evidenza se necessario
+    if (count > 0 && positionForFeatured !== undefined) {
+        const featuredStartup = await prisma.startup.findFirst({
+            where: {
+                visible: true,
+                // Qui potresti aggiungere una logica per determinare le startup in evidenza
+            },
+            include: fullInclude
+        });
+
+        if (featuredStartup) {
+            const featuredWithAmount = {
+                ...featuredStartup,
+                amountRaised: featuredStartup.amountRaised ? Number(featuredStartup.amountRaised) : null
+            };
+
+            // Inserisci alla posizione specificata
+            processedStartups.splice(
+                positionForFeatured,
+                0,
+                featuredWithAmount
+            );
+        }
+    }
+
+    return { startups: processedStartups, count };
+}
 
 export async function createStartupAction(formData: FormData) {
     const directoryId = formData.get('directoryId') as string

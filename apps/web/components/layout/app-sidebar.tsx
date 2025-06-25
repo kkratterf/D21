@@ -2,18 +2,16 @@
 
 import {
   ChartColumn,
-  ChartNoAxesCombined,
-  Folder,
   GithubIcon,
+  Globe,
   HelpCircle,
+  Hexagon,
   LinkedinIcon,
   type LucideIcon,
   MapIcon,
   MessageCircle,
   Monitor,
   MoonIcon,
-  PlusCircle,
-  Rocket,
   Scroll,
   Slack,
   SunIcon,
@@ -27,11 +25,11 @@ import {
   SidebarHeader,
 } from '@d21/design-system/components/ui/sidebar';
 
-import { MobileContent } from '@/components/layouts/mobile-content';
-import { MobileTitle } from '@/components/layouts/mobile-title';
-import { NavHeader } from '@/components/layouts/nav-header';
-import { NavMain } from '@/components/layouts/nav-main';
-import { NavSecondary } from '@/components/layouts/nav-secondary';
+import { MobileContent } from '@/components/layout/mobile-content';
+import { MobileTitle } from '@/components/layout/mobile-title';
+import { NavHeader } from '@/components/layout/nav-header';
+import { NavMain } from '@/components/layout/nav-main';
+import { NavSecondary } from '@/components/layout/nav-secondary';
 
 type NavItem = {
   title: string;
@@ -51,29 +49,18 @@ type NavSecondaryItem = NavItem | NavDivider;
 const data = {
   navMain: [
     {
-      title: 'Startups',
-      url: '/startups',
-      icon: Rocket,
+      title: 'Directories',
+      url: '/directories',
+      icon: Globe,
     },
     {
       title: 'Benchmark',
       url: '/benchmark',
       icon: ChartColumn,
-    },
-    {
-      title: 'Funding Report',
-      url: '/funding-report',
-      icon: ChartNoAxesCombined,
+      disabled: true,
     },
   ],
   navSecondary: [
-    {
-      title: 'Add a startup',
-      url: 'https://tally.so/r/3lKZEW',
-      icon: PlusCircle,
-      isExternal: true,
-      tooltip: 'Add a startup',
-    },
     {
       title: 'Manifesto',
       url: '/manifesto',
@@ -88,14 +75,14 @@ const data = {
       children: [
         {
           title: 'Share your thoughts',
-          url: 'https://c14.featurebase.app/en',
+          url: 'https://d21.featurebase.app/en',
           icon: MessageCircle,
           isExternal: true,
           tooltip: 'Share your feedback and suggestions',
         },
         {
           title: "What's next?",
-          url: 'https://c14.featurebase.app/en/roadmap',
+          url: 'https://d21.featurebase.app/en/roadmap',
           icon: MapIcon,
           isExternal: true,
           tooltip: 'Check out our roadmap and upcoming features',
@@ -105,21 +92,21 @@ const data = {
         },
         {
           title: 'Join our community',
-          url: 'https://join.slack.com/t/c14dotso/shared_invite/zt-2wsuiiiis-2bBr9Rj7BY7GGq3zfmhu8g',
+          url: 'https://join.slack.com/t/d21dotso/shared_invite/zt-36o6emmb7-4IMnrcgvLz1bXy6X1f_OuQ',
           isExternal: true,
           icon: Slack,
           tooltip: 'Join our community',
         },
         {
           title: 'Follow us',
-          url: 'https://www.linkedin.com/company/c14dotso',
+          url: 'https://www.linkedin.com/company/d21dotso',
           icon: LinkedinIcon,
           isExternal: true,
           tooltip: 'Follow us on Linkedin',
         },
         {
           title: 'View source code',
-          url: 'https://github.com/kkratterf/C14',
+          url: 'https://github.com/kkratterf/D21',
           icon: GithubIcon,
           isExternal: true,
           tooltip: 'View source code',
@@ -128,11 +115,11 @@ const data = {
           type: 'divider',
         },
         {
-          title: 'Explore D21',
-          url: "https://www.d21.so",
-          icon: Folder,
+          title: 'Explore C14',
+          url: "https://www.c14.so",
+          icon: Hexagon,
           isExternal: true,
-          tooltip: 'Explore D21',
+          tooltip: 'Explore C14',
         },
       ],
     },

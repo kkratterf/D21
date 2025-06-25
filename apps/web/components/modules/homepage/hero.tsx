@@ -16,7 +16,7 @@ const Hero = () => {
           Discover the best startups
         </h1>
         <p className='text-base text-description leading-7'>
-          A growing, open-source database of Italian startups 🇮🇹
+          A growing, open-source database of startup directories 📁
           <br />
           Designed to make the ecosystem more transparent and accessible
         </p>
@@ -25,8 +25,6 @@ const Hero = () => {
         <Suspense fallback={<HeroCard url="/startups" title="Startups" />}>
           <StartupCount />
         </Suspense>
-        <HeroCard url="/benchmark" title="Benchmark" />
-        <HeroCard url="/funding-report" title="Funding Report" />
       </div>
     </section>
   );

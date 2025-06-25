@@ -25,7 +25,7 @@ import {
 
 import { cn } from '@d21/design-system/lib/utils';
 
-import NavAccess from '@/components/layouts/nav-access';
+import NavAccess from '@/components/layout/nav-access';
 
 type NavDivider = {
   type: 'divider';

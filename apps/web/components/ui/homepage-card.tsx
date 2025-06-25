@@ -1,5 +1,5 @@
-import type { Startup } from '@prisma/client';
-import { ChevronRight, RocketIcon } from 'lucide-react';
+import type { Directory } from '@prisma/client';
+import { ChevronRight, CirclePlusIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import {
@@ -11,21 +11,21 @@ import { Skeleton } from '@d21/design-system/components/ui/skeleton';
 import { cn, focusRing } from '@d21/design-system/lib/utils';
 
 interface HomepageCardProps {
-  item: Startup;
+  item: Directory;
 }
 
 export const HomepageCard = ({ item }: HomepageCardProps) => {
   return (
     <Link
       key={item.name}
-      href={item.id}
+      href={item.slug}
       className={cn('rounded-2xl', focusRing)}
     >
       <div className='group group flew-row flex items-center gap-3 rounded-2xl py-3 pr-6 pl-4 hover:bg-item-hover'>
         <Avatar className='size-12 rounded-2xl'>
           <AvatarImage
             className='transition-all duration-400 group-hover:scale-105'
-            src={item.logo || ""}
+            src={item.imageUrl || ""}
             alt={item.name}
             width={48}
             height={48}
@@ -36,7 +36,7 @@ export const HomepageCard = ({ item }: HomepageCardProps) => {
         </Avatar>
         <div className='flex w-full flex-col'>
           <p className='line-clamp-1 font-semibold text-base'>{item.name}</p>
-          <p className='line-clamp-1 text-description text-sm'>{item.shortDescription}</p>
+          <p className='line-clamp-1 text-description text-sm'>{item.description}</p>
         </div>
         <ChevronRight className='size-5 stroke-icon opacity-0 transition-opacity duration-400 group-hover:opacity-100' />
       </div>
@@ -60,12 +60,12 @@ export const HomepageCardSkeleton = () => {
 export const SeeAllCard = () => {
   return (
     <Link
-      href="/startups"
+      href="/directories"
       className={cn('rounded-2xl', focusRing)}
     >
       <div className='group group flew-row flex items-center gap-3 rounded-2xl py-3 pr-6 pl-4 hover:bg-item-hover'>
         <div className='flex size-12 min-w-12 items-center justify-center rounded-2xl border border-border bg-subtle'>
-          <RocketIcon className='size-6 stroke-icon' />
+          <CirclePlusIcon className='size-6 stroke-icon' />
         </div>
         <div className='flex w-full flex-col'>
           <p className='line-clamp-1 font-semibold text-base text-description'>See all</p>

@@ -2,7 +2,80 @@
 
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
+import type { DirectoryOrder, GetDirectories } from '@/types/directory'
+import { DIRECTORY_PAGE_SIZE, } from '@/types/directory'
 import { revalidatePath } from 'next/cache'
+
+const includeForUsefullDataDirectory = {
+    _count: {
+        select: {
+            startups: {
+                where: {
+                    visible: true
+                }
+            }
+        }
+    }
+};
+
+const getDirectoryOrderBy = (sort: DirectoryOrder) => {
+    switch (sort) {
+        case "nameAsc":
+            return { name: 'asc' as const };
+        case "nameDesc":
+            return { name: 'desc' as const };
+        case "createdAtAsc":
+            return { createdAt: 'asc' as const };
+        case "createdAtDesc":
+            return { createdAt: 'desc' as const };
+        case "featuredOrderAsc":
+            return { featuredOrder: 'asc' as const };
+        case "featuredOrderDesc":
+            return { featuredOrder: 'desc' as const };
+        default:
+            return { featuredOrder: 'asc' as const };
+    }
+}
+
+export const getDirectoriesWithPagination = async ({
+    name,
+    tags,
+    locations,
+    featured,
+    page = 1,
+    sort = "featuredOrderAsc"
+}: GetDirectories) => {
+    const fullInclude = {
+        ...includeForUsefullDataDirectory,
+    };
+
+    const query = {
+        where: {
+            ...(featured !== undefined && { featured: featured }),
+            name: name ? {
+                contains: name,
+                mode: 'insensitive' as const
+            } : undefined,
+            tags: tags?.length ? {
+                hasSome: tags
+            } : undefined,
+            location: locations?.length ? {
+                in: locations
+            } : undefined
+        },
+        orderBy: getDirectoryOrderBy(sort),
+        take: DIRECTORY_PAGE_SIZE,
+        skip: (page - 1) * DIRECTORY_PAGE_SIZE,
+        include: fullInclude
+    };
+
+    const [directories, count] = await prisma.$transaction([
+        prisma.directory.findMany(query),
+        prisma.directory.count({ where: query.where })
+    ]);
+
+    return { directories, count };
+}
 
 export async function getDirectories(options?: {
     include?: {
@@ -12,7 +85,10 @@ export async function getDirectories(options?: {
                 longitude?: boolean
             }
         }
-    }
+    },
+    orderBy?: { [key: string]: 'asc' | 'desc' },
+    limit?: number,
+    page?: number
 }) {
     return await prisma.directory.findMany({
         include: {
@@ -27,9 +103,11 @@ export async function getDirectories(options?: {
             },
             ...options?.include
         },
-        orderBy: {
+        orderBy: options?.orderBy || {
             featuredOrder: 'asc'
-        }
+        },
+        ...(options?.limit && { take: options.limit }),
+        ...(options?.page && options?.limit && { skip: (options.page - 1) * options.limit })
     })
 }
 
@@ -52,39 +130,46 @@ export async function getFeaturedDirectories() {
     return directories
 }
 
-export async function getUserDirectories() {
+export const getUserDirectoriesWithPagination = async ({
+    name,
+    page = 1,
+    sort = "createdAtDesc"
+}: {
+    name?: string;
+    page?: number;
+    sort?: DirectoryOrder;
+}) => {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        return []
+        return { directories: [], count: 0 }
     }
 
-    return prisma.directory.findMany({
+    const fullInclude = {
+        ...includeForUsefullDataDirectory,
+    };
+
+    const query = {
         where: {
-            userId: user.id
+            userId: user.id,
+            name: name ? {
+                contains: name,
+                mode: 'insensitive' as const
+            } : undefined,
         },
-        include: {
-            _count: {
-                select: {
-                    startups: {
-                        where: {
-                            visible: true
-                        }
-                    }
-                }
-            },
-            startups: {
-                select: {
-                    latitude: true,
-                    longitude: true
-                }
-            }
-        },
-        orderBy: {
-            createdAt: 'desc'
-        }
-    })
+        orderBy: getDirectoryOrderBy(sort),
+        take: DIRECTORY_PAGE_SIZE,
+        skip: (page - 1) * DIRECTORY_PAGE_SIZE,
+        include: fullInclude
+    };
+
+    const [directories, count] = await prisma.$transaction([
+        prisma.directory.findMany(query),
+        prisma.directory.count({ where: query.where })
+    ]);
+
+    return { directories, count };
 }
 
 export async function createDirectoryAction(formData: FormData) {
@@ -224,4 +309,59 @@ export async function checkSlugUniqueness(slug: string) {
 export async function getDirectoriesCount() {
     const count = await prisma.directory.count()
     return { value: count }
+}
+
+export async function getDirectoryTags() {
+    const directories = await prisma.directory.findMany({
+        select: {
+            tags: true
+        }
+    });
+
+    // Estrai tutti i tag e rimuovi duplicati
+    const allTags = directories
+        .flatMap(directory => directory.tags)
+        .filter((tag): tag is string => tag !== null && tag !== undefined)
+        .filter((tag, index, self) => self.indexOf(tag) === index)
+        .sort();
+
+    return allTags.map(tag => ({
+        label: tag,
+        value: tag
+    }));
+}
+
+export async function getUserDirectories() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return []
+    }
+
+    return prisma.directory.findMany({
+        where: {
+            userId: user.id
+        },
+        include: {
+            _count: {
+                select: {
+                    startups: {
+                        where: {
+                            visible: true
+                        }
+                    }
+                }
+            },
+            startups: {
+                select: {
+                    latitude: true,
+                    longitude: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    })
 }
