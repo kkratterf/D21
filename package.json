@@ -1,0 +1,30 @@
+{
+  "name": "d21",
+  "description": "Open-source startup directories",
+  "license": "AGPL-3.0-or-later",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "ultracite lint",
+    "format": "ultracite format",
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules .turbo && pnpm store prune",
+    "clean:full": "pnpm clean && pnpm install"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@d21/typescript-config": "workspace:*",
+    "turbo": "^2.4.4",
+    "@turbo/gen": "^2.4.4",
+    "typescript": "^5.7.2",
+    "ultracite": "^4.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "resolutions": {
+    "@headlessui/react": "2.2.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
