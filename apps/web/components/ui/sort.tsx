@@ -61,7 +61,7 @@ export function Sort({
                     </Button>
                 </PopoverTrigger>
             </Tooltip>
-            <PopoverContent className='w-[240px] p-0' align="start">
+            <PopoverContent className='w-[240px] p-0' align="end">
                 <Command
                     shouldFilter={false}
                 >

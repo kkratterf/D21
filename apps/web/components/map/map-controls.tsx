@@ -16,7 +16,7 @@ export default function MapCotrols() {
   };
 
   return (
-    <aside className='absolute top-3 right-3 z-10 hidden rounded-[10px] border border-default bg-elevated p-0.5 shadow-xl md:flex md:flex-col'>
+    <aside className='fixed top-8 right-6 z-10 hidden rounded-[10px] border border-default bg-elevated p-0.5 shadow-xl md:flex md:flex-col'>
       <Button variant="secondary" icon onClick={zoomIn} className="rounded-b-none">
         <PlusIcon className='h-5 w-5' />
         <span className="sr-only">Zoom in</span>

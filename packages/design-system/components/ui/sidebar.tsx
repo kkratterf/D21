@@ -304,7 +304,7 @@ const SidebarTrigger = React.forwardRef<
         size={isMobile ? 'default' : 'small'}
         variant={isMobile ? "secondary" : "text"}
         icon
-        className={cn(className)}
+        className={cn("[&>svg]:stroke-icon", className)}
         onClick={(event) => {
           onClick?.(event);
           toggleSidebar();

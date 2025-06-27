@@ -30,7 +30,9 @@ export default function MapProvider({
   const [points, setPoints] = useState<Point[]>([]);
   const [mapStyle, setMapStyle] = useState<string | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [isChangingTheme, setIsChangingTheme] = useState(false);
   const childrenRef = useRef(children);
+  const mapStyleRef = useRef<string | null>(null); // Track map style in ref to survive Fast Refresh
 
   const addPoint = (point: Point) => {
     setPoints(prev => [...prev, point]);
@@ -56,23 +58,63 @@ export default function MapProvider({
     const newStyle = `mapbox://styles/mapbox/${resolvedTheme === 'dark' ? 'dark-v11' : 'light-v11'}`;
 
     // Imposta lo stile solo se non è già stato impostato
-    if (!mapStyle) {
+    if (!mapStyleRef.current) {
       setMapStyle(newStyle);
+      mapStyleRef.current = newStyle;
     }
-  }, [resolvedTheme, mapStyle]);
+  }, [resolvedTheme]);
+
+  // Update map style when theme changes
+  useEffect(() => {
+    console.log('🌙 MapProvider: Theme change detected', { resolvedTheme, map: !!map.current });
+
+    if (!map.current || !resolvedTheme) return;
+
+    const newStyle = `mapbox://styles/mapbox/${resolvedTheme === 'dark' ? 'dark-v11' : 'light-v11'}`;
+    console.log('🎨 MapProvider: New style:', newStyle, 'Current style sprite:', map.current.getStyle().sprite);
+
+    // Update the map style if it's different from current
+    if (map.current.getStyle().sprite !== newStyle) {
+      console.log('🔄 MapProvider: Changing map style...');
+      setIsChangingTheme(true);
+      map.current.setStyle(newStyle);
+      setMapStyle(newStyle);
+      mapStyleRef.current = newStyle;
+    } else {
+      console.log('✅ MapProvider: Style already matches, no change needed');
+    }
+  }, [resolvedTheme]);
 
   // Initialize map
   useEffect(() => {
+    console.log('🔄 MapProvider: Initializing map...', {
+      mapContainerRef: !!mapContainerRef.current,
+      map: !!map.current,
+      mapStyle,
+      mapStyleRef: mapStyleRef.current
+    });
+
     if (!process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
       throw new Error('NEXT_PUBLIC_MAPBOX_TOKEN is required');
     }
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-    if (!mapContainerRef.current || map.current || !mapStyle) return;
+    // Use ref value if state is reset during Fast Refresh
+    const currentMapStyle = mapStyle || mapStyleRef.current;
 
+    if (!mapContainerRef.current || map.current || !currentMapStyle) {
+      console.log('🚫 MapProvider: Skipping initialization', {
+        hasContainer: !!mapContainerRef.current,
+        hasMap: !!map.current,
+        hasStyle: !!currentMapStyle
+      });
+      return;
+    }
+
+    console.log('🗺️ MapProvider: Creating new map with style:', currentMapStyle);
     map.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: mapStyle,
+      style: currentMapStyle,
       center: [initialViewState.longitude, initialViewState.latitude],
       zoom: initialViewState.zoom,
       attributionControl: false,
@@ -80,38 +122,47 @@ export default function MapProvider({
     });
 
     const handleLoad = () => {
+      console.log('✅ MapProvider: Map loaded');
       setLoaded(true);
     };
 
     const handleStyleLoad = () => {
+      console.log('🎨 MapProvider: Style loaded');
       setIsMapReady(true);
+      setIsChangingTheme(false);
     };
 
     map.current.on("load", handleLoad);
     map.current.on("style.load", handleStyleLoad);
 
     return () => {
-      if (map.current) {
-        map.current.off("load", handleLoad);
-        map.current.off("style.load", handleStyleLoad);
-        map.current.remove();
-        map.current = null;
-      }
-      setLoaded(false);
+      console.log('🧹 MapProvider: Cleaning up map');
+      // Set isMapReady to false first to prevent markers from trying to add themselves
       setIsMapReady(false);
+      setLoaded(false);
+
+      // Small delay to ensure all components have time to react to isMapReady change
+      setTimeout(() => {
+        if (map.current) {
+          map.current.off("load", handleLoad);
+          map.current.off("style.load", handleStyleLoad);
+          map.current.remove();
+          map.current = null;
+        }
+      }, 0);
     };
   }, [initialViewState, mapContainerRef, mapStyle]);
 
-  if (!map.current || !loaded || !resolvedTheme) {
+  if (!map.current || !loaded || !resolvedTheme || isChangingTheme) {
     return (
       <div className='inset-0 flex h-full w-full items-center justify-center bg-background'>
-        <Loader2 className='size-4 animate-spin' />
+        <Loader2 className='size-4 animate-spin stroke-icon' />
       </div>
     );
   }
 
   return (
-    <div className="z-0">
+    <div className='relative z-0 h-full w-full'>
       <MapContext.Provider
         value={{
           map: map.current,

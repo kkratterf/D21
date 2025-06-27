@@ -3,7 +3,7 @@
 import { useMap } from "@/context/map-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@d21/design-system/components/ui/avatar";
 import { Tooltip, TooltipProvider } from "@d21/design-system/components/ui/tooltip";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Marker from "./map-marker";
 
 interface Startup {
@@ -71,6 +71,15 @@ function calculateBoundingBox(startups: Startup[]) {
 export default function StartupMarkers({ startups, loading = false }: StartupMarkersProps) {
     const { map, isMapReady } = useMap();
     const hasCenteredRef = useRef(false);
+    const [markersReady, setMarkersReady] = useState(false);
+
+    console.log('📍 StartupMarkers: Render', {
+        startupsCount: startups.length,
+        loading,
+        isMapReady,
+        markersReady,
+        hasCentered: hasCenteredRef.current
+    });
 
     useEffect(() => {
         const handleStartupSelect = (event: CustomEvent) => {
@@ -92,8 +101,17 @@ export default function StartupMarkers({ startups, loading = false }: StartupMar
 
     // Effetto per centrare la mappa sui marker dopo che sono stati caricati
     useEffect(() => {
+        console.log('🎯 StartupMarkers: Checking centering conditions', {
+            map: !!map,
+            hasCentered: hasCenteredRef.current,
+            loading,
+            isMapReady,
+            markersReady,
+            startupsCount: startups.length
+        });
+
         // Aspetta che il caricamento sia completato e che ci siano startup
-        if (!map || hasCenteredRef.current || loading || !isMapReady || startups.length === 0) return;
+        if (!map || hasCenteredRef.current || loading || !isMapReady || !markersReady || startups.length === 0) return;
 
         const validStartups = startups.filter(startup =>
             isValidLatitude(startup.latitude) && isValidLongitude(startup.longitude)
@@ -101,25 +119,38 @@ export default function StartupMarkers({ startups, loading = false }: StartupMar
 
         if (validStartups.length === 0) return;
 
-        // Aspetta un po' per assicurarsi che i marker siano stati renderizzati
-        const timer = setTimeout(() => {
-            const boundingBox = calculateBoundingBox(validStartups);
+        console.log('🚀 StartupMarkers: Executing flyTo with', validStartups.length, 'valid startups');
 
-            if (boundingBox) {
-                map.flyTo({
-                    center: [boundingBox.centerLng, boundingBox.centerLat],
-                    zoom: 6,
-                    duration: 1500
-                });
-                hasCenteredRef.current = true;
-            }
-        }, 1000); // Aumentato a 1 secondo per dare più tempo ai marker di renderizzarsi
+        // Centra immediatamente senza timer
+        const boundingBox = calculateBoundingBox(validStartups);
 
-        return () => clearTimeout(timer);
-    }, [map, startups, loading, isMapReady]);
+        if (boundingBox) {
+            map.flyTo({
+                center: [boundingBox.centerLng, boundingBox.centerLat],
+                zoom: 4,
+                duration: 1500
+            });
+            hasCenteredRef.current = true;
+            console.log('✅ StartupMarkers: flyTo completed');
+        }
+    }, [map, startups, loading, isMapReady, markersReady]);
+
+    // Marca i marker come pronti dopo che sono stati renderizzati
+    useEffect(() => {
+        if (isMapReady && startups.length > 0) {
+            console.log('⏰ StartupMarkers: Setting timer for markers ready');
+            // Aspetta che tutti i marker siano renderizzati
+            const timer = setTimeout(() => {
+                console.log('✅ StartupMarkers: Markers ready');
+                setMarkersReady(true);
+            }, 500); // Aumentato per dare più tempo ai marker di renderizzarsi
+            return () => clearTimeout(timer);
+        }
+    }, [isMapReady, startups.length]);
 
     // Non renderizzare i marker se la mappa non è pronta o se è in loading
     if (loading || !isMapReady) {
+        console.log('🚫 StartupMarkers: Not rendering markers', { loading, isMapReady });
         return null;
     }
 
@@ -158,8 +189,8 @@ export default function StartupMarkers({ startups, loading = false }: StartupMar
                     >
                         <TooltipProvider delayDuration={200}>
                             <Tooltip side="top" content={startup.name}>
-                                <div className='bg-transparent p-0 border-0 cursor-pointer'>
-                                    <Avatar className='border border-default rounded-lg size-9 hover:scale-110 transition-all duration-200 transform'>
+                                <div className='border-0 bg-transparent p-0'>
+                                    <Avatar className='size-9 transform rounded-lg border border-default transition-all duration-200 hover:scale-110'>
                                         <AvatarImage src={startup.logoUrl || ""} />
                                         <AvatarFallback>{startup.name.charAt(0)}</AvatarFallback>
                                     </Avatar>

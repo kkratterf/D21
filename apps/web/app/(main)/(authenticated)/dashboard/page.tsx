@@ -1,6 +1,6 @@
 import { getUserDirectoriesWithPagination } from '@/actions/directory';
 import NavMobile from '@/components/layout/nav-mobile';
-import DashboardFilters from '@/components/modules/dashboard/filters';
+import { DashboardFiltersClient } from '@/components/modules/dashboard/dashboard-filters-client';
 import { DashboardPagination } from '@/components/modules/dashboard/pagination';
 import ScrollToTop from '@/components/scrollToTopClient';
 import DashboardCard, { DashboardCardSkeleton } from '@/components/ui/dashboard-card';
@@ -31,7 +31,7 @@ async function DashboardList({ searchParams }: { searchParams: Record<string, st
 
     return (
         <>
-            <div className='flex h-full w-full flex-1 flex-col p-2'>
+            <div className='flex flex-col flex-1 p-2 w-full h-full'>
                 {directories.map((directory) => (
                     <DashboardCard key={directory.id} item={directory} />
                 ))}
@@ -52,13 +52,13 @@ export default async function DashboardPage(props: IProps) {
 
     return (
         <div className="flex flex-col pt-6">
-            <div className='flex items-center justify-between px-7'>
+            <div className='flex justify-between items-center px-7'>
                 <h1 className="font-brand text-3xl">Dashboard</h1>
                 <NavMobile />
             </div>
             <Suspense fallback={<DashboardLoading />}>
-                <div className='sticky top-0 z-20 flex w-full flex-col border-default border-b bg-background px-3 py-2.5'>
-                    <DashboardFilters />
+                <div className='top-0 z-20 sticky flex flex-col bg-background px-3 py-2.5 border-default border-b w-full'>
+                    <DashboardFiltersClient />
                 </div>
                 <ScrollToTop />
                 <DashboardList searchParams={waited} />
@@ -69,7 +69,7 @@ export default async function DashboardPage(props: IProps) {
 
 function DashboardLoading() {
     return (
-        <div className='flex h-full w-full flex-1 flex-col p-2'>
+        <div className='flex flex-col flex-1 p-2 w-full h-full'>
             {Array.from({ length: 5 }, (_, i) => (
                 <DashboardCardSkeleton key={i} />
             ))}

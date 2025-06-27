@@ -1,9 +1,9 @@
 'use client';
 
 import {
-  ChartColumn,
+  Copyright,
+  FolderOpenIcon,
   GithubIcon,
-  Globe,
   HelpCircle,
   Hexagon,
   LinkedinIcon,
@@ -51,13 +51,7 @@ const data = {
     {
       title: 'Directories',
       url: '/directories',
-      icon: Globe,
-    },
-    {
-      title: 'Benchmark',
-      url: '/benchmark',
-      icon: ChartColumn,
-      disabled: true,
+      icon: FolderOpenIcon,
     },
   ],
   navSecondary: [
@@ -110,6 +104,13 @@ const data = {
           icon: GithubIcon,
           isExternal: true,
           tooltip: 'View source code',
+        },
+        {
+          title: 'Federico Kratter Thaler',
+          url: 'https://www.linkedin.com/in/kkratter/',
+          icon: Copyright,
+          isExternal: true,
+          tooltip: 'Designed by Federico Kratter Thaler',
         },
         {
           type: 'divider',

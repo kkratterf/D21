@@ -10,10 +10,9 @@ import { Button } from '@d21/design-system/components/ui/button';
 interface BannerProps {
     hasDirectory: boolean;
     isLoggedIn: boolean;
-    className?: string;
 }
 
-export const Banner = ({ hasDirectory, isLoggedIn, className }: BannerProps) => {
+export const Banner = ({ hasDirectory, isLoggedIn }: BannerProps) => {
     const router = useRouter();
     const supabase = createClient();
 
@@ -24,11 +23,11 @@ export const Banner = ({ hasDirectory, isLoggedIn, className }: BannerProps) => 
         }
 
         if (!hasDirectory) {
-            router.push('/create');
+            router.push('/dashboard');
             return;
         }
 
-        router.push('/create');
+        router.push('/dashboard');
     };
 
     const getContent = () => {
@@ -36,7 +35,7 @@ export const Banner = ({ hasDirectory, isLoggedIn, className }: BannerProps) => 
             return {
                 title: "Build your own startup universe",
                 description: "Collect your favorite startups, organize them into neat directories, and share them with the world. Just sign up to start.",
-                buttonText: "Start your directory"
+                buttonText: "Create your directory"
             };
         }
 

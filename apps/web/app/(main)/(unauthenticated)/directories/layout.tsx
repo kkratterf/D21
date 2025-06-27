@@ -3,13 +3,14 @@ import { Suspense } from 'react';
 
 import { getDirectoryTags } from '@/actions/directory';
 import NavMobile from '@/components/layout/nav-mobile';
-import DirectoryFilters, { DirectoryFiltersSkeleton } from '@/components/modules/directories/filters';
+import { DirectoryFiltersClient } from '@/components/modules/directories/directory-filters-client';
+import { DirectoryFiltersSkeleton } from '@/components/modules/directories/filters';
 import ScrollToTop from '@/components/scrollToTopClient';
 import Loading from './loading';
 
 async function DirectoryFiltersWrapper() {
   const availableTags = await getDirectoryTags();
-  return <DirectoryFilters tags={availableTags} />;
+  return <DirectoryFiltersClient tags={availableTags} />;
 }
 
 export default function DirectoriesLayout({

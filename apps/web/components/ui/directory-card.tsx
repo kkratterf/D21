@@ -28,10 +28,10 @@ const DirectoryCard = ({ item, selectedTags = [] }: DirectoryCardProps) => {
       href={item.slug}
       className={cn('rounded-xl', focusRing)}
     >
-      <div className='group group flex items-center gap-3 hover:bg-item-hover px-3 py-2 rounded-xl flew-row'>
-        <Avatar className='border border-border rounded-xl size-10'>
+      <div className='group group flew-row flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-item-hover'>
+        <Avatar className='size-10 rounded-xl border border-border'>
           <AvatarImage
-            className='group-hover:scale-105 transition-all duration-400'
+            className='transition-all duration-400 group-hover:scale-105'
             src={item.imageUrl || ""}
             alt={item.name}
             width={40}
@@ -41,20 +41,22 @@ const DirectoryCard = ({ item, selectedTags = [] }: DirectoryCardProps) => {
             {item.name.slice(0, 2)}
           </AvatarFallback>
         </Avatar>
-        <div className='flex flex-row items-center gap-2 w-full'>
-          <p className='font-semibold text-base whitespace-nowrap'>{item.name}</p>
-          <p className='text-description text-sm line-clamp-1'>
+        <div className='flex w-full flex-row items-center gap-2'>
+          <p className='whitespace-nowrap font-semibold text-base'>{item.name}</p>
+          <p className='line-clamp-1 text-description text-sm'>
             {item.description}
           </p>
         </div>
         <div className='flex items-center gap-2'>
-          <div className='hidden lg:flex flex-row gap-[2px]'>
-            <Tag
-              variant="neutral"
-              className='bg-background border-border rounded-full text-description'
-            >
-              {item._count.startups} startup
-            </Tag>
+          <div className='hidden flex-row gap-[2px] lg:flex'>
+            {item._count.startups > 0 && (
+              <Tag
+                variant="neutral"
+                className='rounded-full border-border bg-background text-description'
+              >
+                {item._count.startups} {item._count.startups === 1 ? 'startup' : 'startups'}
+              </Tag>
+            )}
             {item.tags?.map((tag: string, index: number) => (
               <Tag
                 variant="neutral"
@@ -79,10 +81,10 @@ export default DirectoryCard;
 
 export const DirectoryCardSkeleton = () => {
   return (
-    <div className='group flex items-center gap-3 py-2 pr-4 pl-3 rounded-xl flew-row'>
-      <Skeleton className='rounded-xl size-10' />
-      <div className='flex flex-row items-center gap-2 w-full'>
-        <Skeleton className='rounded-md w-full h-5' />
+    <div className='group flew-row flex items-center gap-3 rounded-xl py-2 pr-4 pl-3'>
+      <Skeleton className='size-10 rounded-xl' />
+      <div className='flex w-full flex-row items-center gap-2'>
+        <Skeleton className='h-5 w-full rounded-md' />
       </div>
     </div>);
 };

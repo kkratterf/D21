@@ -5,8 +5,9 @@ import { getStartupFundingStagesForAdmin, getStartupTagsForAdmin, getStartupTeam
 import NavMobile from '@/components/layout/nav-mobile'
 import { EditStartupButton } from '@/components/modules/admin/edit-startup-button'
 import { StartupVisibilitySwitch } from '@/components/modules/admin/startup-visibility-switch'
-import StartupFilters, { StartupFiltersSkeleton } from '@/components/modules/startups/filters'
+import { StartupFiltersSkeleton } from '@/components/modules/startups/filters'
 import { StartupPagination } from '@/components/modules/startups/pagination'
+import { StartupFiltersClient } from '@/components/modules/startups/startup-filters-client'
 import ScrollToTop from '@/components/scrollToTopClient'
 import Empty from '@/components/ui/empty'
 import StartupCard from '@/components/ui/startup-card'
@@ -63,7 +64,7 @@ async function StartupFiltersWrapper({ slug }: { slug: string }) {
     ]);
 
     return (
-        <StartupFilters
+        <StartupFiltersClient
             tags={availableTags}
             fundingStages={availableFundingStages}
             teamSizes={availableTeamSizes}

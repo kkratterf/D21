@@ -1,19 +1,17 @@
 'use client';
 
-import { ArrowDownAZ, ArrowDownNarrowWide, ArrowDownWideNarrow, ArrowDownZA, DollarSign, type LucideIcon, Plus, Tags, Users, X } from 'lucide-react';
+import { ArrowDownAZ, ArrowDownNarrowWide, ArrowDownWideNarrow, ArrowDownZA, DollarSign, type LucideIcon, Tags, Users, X } from 'lucide-react';
 import { useRouter, useSearchParams, } from 'next/navigation';
-import { useOptimistic, useState, useTransition } from 'react';
+import { useOptimistic, useTransition } from 'react';
 
 import { Button } from '@d21/design-system/components/ui/button';
 import { Input } from '@d21/design-system/components/ui/input';
 import { Skeleton } from '@d21/design-system/components/ui/skeleton';
 import { Tooltip } from '@d21/design-system/components/ui/tooltip';
 
-import { SubmitStartupSheet } from '@/components/modules/startups/submit-sheet';
 import { Filter } from '@/components/ui/filter';
 import { Sort } from '@/components/ui/sort';
 import type { StartupOrder } from '@/types/startup';
-import Link from 'next/link';
 
 interface IProps {
     searchParams: URLSearchParams;
@@ -64,7 +62,6 @@ const StartupsFiltersWithParams = ({
 }: IProps) => {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
-    const [isSubmitSheetOpen, setIsSubmitSheetOpen] = useState(false);
 
     // Parse search params
     const initialFilters: StartupSearchParams = {
@@ -146,7 +143,7 @@ const StartupsFiltersWithParams = ({
                 <div className='flex w-full flex-col items-center gap-2 md:flex-row'>
                     <Input
                         placeholder="Search startups..."
-                        className='w-full md:max-w-64 xl:max-w-72'
+                        className="w-full md:max-w-64 xl:max-w-72"
                         value={optimisticFilters.name ?? ""}
                         onChange={(e) => handleFilterChange('name', e.target.value)}
                     />
@@ -179,7 +176,7 @@ const StartupsFiltersWithParams = ({
                     {hasActiveFilters() && (
                         <Tooltip content="Reset filtri" className='z-50 hidden md:flex 2xl:hidden'>
                             <Button
-                                className='w-full md:w-auto'
+                                className="w-full md:w-auto"
                                 variant="text"
                                 onClick={() => {
                                     startTransition(() => {
@@ -195,29 +192,7 @@ const StartupsFiltersWithParams = ({
                         </Tooltip>
                     )}
                 </div>
-                <div className='flex items-center gap-2'>
-                    <Tooltip content="Submit Startup">
-                        <Button
-                            variant="primary"
-                            size="small"
-                            onClick={() => setIsSubmitSheetOpen(true)}
-                            className='hidden md:flex'
-                        >
-                            <Plus className="size-4" />
-                            <span className='hidden lg:flex'>Submit Startup</span>
-                        </Button>
-                    </Tooltip>
-                    <Button>
-                        <Link href={`/${directorySlug}/map`}>Map</Link>
-                    </Button>
-                    <Button
-                        variant="primary"
-                        size="small"
-                        onClick={() => setIsSubmitSheetOpen(true)}
-                        className='md:hidden'
-                    >
-                        <Plus className="size-4" />
-                    </Button>
+                <div className="flex items-center gap-2">
                     <Sort
                         options={SortOptions}
                         selectedValues={getSelectedValues('sort')}
@@ -226,11 +201,6 @@ const StartupsFiltersWithParams = ({
                     />
                 </div>
             </div>
-            <SubmitStartupSheet
-                isOpen={isSubmitSheetOpen}
-                onOpenChange={setIsSubmitSheetOpen}
-                directorySlug={directorySlug}
-            />
         </div>
     );
 };
@@ -252,12 +222,13 @@ export default StartupFilters;
 export const StartupFiltersSkeleton = () => {
     return (
         <div className='sticky top-0 z-20 border-border border-b bg-background px-6 py-4'>
-            <div className='flex flex-col items-center gap-2 md:flex-row'>
-                <Skeleton className='h-9 md:max-w-64' />
-                <Skeleton className='h-9 w-20' />
-                <Skeleton className='h-9 w-32' />
-                <Skeleton className='h-9 w-24' />
-                <Skeleton className='h-9 w-28' />
+            <div className='flex w-full flex-col items-center gap-2 md:flex-row'>
+                <Skeleton className='h-9 w-full md:max-w-64' />
+                <div className='flex w-full flex-row gap-2 md:w-auto'>
+                    <Skeleton className='h-9 w-full md:w-[38px]' />
+                    <Skeleton className='h-9 w-full md:w-[38px]' />
+                    <Skeleton className='h-9 w-full md:w-[38px]' />
+                </div>
             </div>
         </div>
     );

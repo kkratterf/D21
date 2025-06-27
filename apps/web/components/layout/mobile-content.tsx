@@ -1,4 +1,4 @@
-import { LogIn, type LucideIcon, User } from 'lucide-react';
+import { LayoutGrid, LogIn, type LucideIcon } from 'lucide-react';
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -6,7 +6,9 @@ import { useEffect, useState } from 'react';
 import { Separator } from '@d21/design-system/components/ui/separator';
 import { SheetClose } from "@d21/design-system/components/ui/sheet";
 import { SidebarGroup, SidebarMenu, SidebarMenuButton } from "@d21/design-system/components/ui/sidebar"
+import { toast } from "@d21/design-system/components/ui/toast";
 
+import { signInWithGoogle } from "@/lib/supabase/actions";
 import { createClient } from '@/lib/supabase/client';
 
 export const MobileContent = ({ mainItems, secondaryItems,
@@ -33,12 +35,21 @@ export const MobileContent = ({ mainItems, secondaryItems,
 }) => {
     const pathname = usePathname();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const isActive = pathname === (isLoggedIn ? '/profile' : '/login');
+    const isActive = (isLoggedIn && pathname.startsWith('/dashboard'));
+
+    const handleGoogleLogin = async () => {
+        try {
+            await signInWithGoogle()
+        } catch (error) {
+            toast.error(error as string)
+        }
+    }
+
     useEffect(() => {
         const handle = async () => {
             const supabase = createClient();
-            const session = await supabase.auth.getUser();
-            setIsLoggedIn(session.data.user !== null);
+            const { data: { user } } = await supabase.auth.getUser();
+            setIsLoggedIn(user !== null);
         }
         handle();
     }, []);
@@ -77,14 +88,23 @@ export const MobileContent = ({ mainItems, secondaryItems,
                         </SheetClose>
                     );
                 })}
-                <SheetClose asChild>
-                    <Link href={isLoggedIn ? '/profile' : '/login'}>
-                        <SidebarMenuButton data-active={isActive}>
-                            {isLoggedIn ? <User /> : <LogIn />}
-                            {isLoggedIn ? 'Profile' : 'Get access'}
+                {isLoggedIn ? (
+                    <SheetClose asChild>
+                        <Link href="/dashboard">
+                            <SidebarMenuButton data-active={isActive}>
+                                <LayoutGrid />
+                                Dashboard
+                            </SidebarMenuButton>
+                        </Link>
+                    </SheetClose>
+                ) : (
+                    <SheetClose asChild>
+                        <SidebarMenuButton onClick={handleGoogleLogin}>
+                            <LogIn />
+                            Get access
                         </SidebarMenuButton>
-                    </Link>
-                </SheetClose>
+                    </SheetClose>
+                )}
             </SidebarMenu>
         </SidebarGroup>
     );

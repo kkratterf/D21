@@ -184,8 +184,7 @@ export const DirectoryFiltersSkeleton = () => {
         <div className='sticky top-0 z-20 border-border border-b bg-background px-6 py-4'>
             <div className='flex flex-col items-center gap-2 md:flex-row'>
                 <Skeleton className='h-9 md:max-w-64' />
-                <Skeleton className='h-9 w-20' />
-                <Skeleton className='h-9 w-32' />
+                <Skeleton className='h-9 w-[38px]' />
             </div>
         </div>
     );

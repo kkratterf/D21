@@ -24,7 +24,7 @@ export default async function Page(props: IProps) {
     });
 
     if (!directories) {
-        return <Empty description='Qualcosa è andato storto. Ma hey, non arrenderti! Riprova più tardi.' />;
+        return <Empty title="Something went wrong" description="But hey, don't give up! Try again later." />;
     }
 
     const pages = Math.ceil(total / DIRECTORY_PAGE_SIZE);
@@ -33,7 +33,7 @@ export default async function Page(props: IProps) {
         <>
             <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
                 {directories.length === 0 ? (
-                    <Empty description='Non arrenderti! Prova a modificare i filtri e vedi cosa viene fuori.' />
+                    <Empty title='No directories found' description="Don't give up! Try modifying the filters and see what comes out." />
                 ) : (
                     directories.map((directory) => (
                         <DirectoryCard
