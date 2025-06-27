@@ -1,5 +1,8 @@
 import { getUserDirectoriesWithPagination } from '@/actions/directory';
+import NavMobile from '@/components/layout/nav-mobile';
+import DashboardFilters from '@/components/modules/dashboard/filters';
 import { DashboardPagination } from '@/components/modules/dashboard/pagination';
+import ScrollToTop from '@/components/scrollToTopClient';
 import DashboardCard, { DashboardCardSkeleton } from '@/components/ui/dashboard-card';
 import Empty from '@/components/ui/empty';
 import { parseDashboardSearchParams } from '@/lib/utils';
@@ -48,9 +51,19 @@ export default async function DashboardPage(props: IProps) {
     const waited = await searchParams;
 
     return (
-        <Suspense fallback={<DashboardLoading />}>
-            <DashboardList searchParams={waited} />
-        </Suspense>
+        <div className="flex flex-col pt-6">
+            <div className='flex items-center justify-between px-7'>
+                <h1 className="font-brand text-3xl">Dashboard</h1>
+                <NavMobile />
+            </div>
+            <Suspense fallback={<DashboardLoading />}>
+                <div className='sticky top-0 z-20 flex w-full flex-col border-default border-b bg-background px-3 py-2.5'>
+                    <DashboardFilters />
+                </div>
+                <ScrollToTop />
+                <DashboardList searchParams={waited} />
+            </Suspense>
+        </div>
     );
 }
 

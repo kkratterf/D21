@@ -1,11 +1,17 @@
 import { Suspense } from 'react';
 
 import { getDirectoriesCount } from '@/actions/directory';
+import { getStartupsCount } from '@/actions/startup';
 import HeroCard from '@/components/ui/hero-card';
 
-const StartupCount = async () => {
+const DirectoriesCount = async () => {
   const count = await getDirectoriesCount();
-  return <HeroCard url="/directories" title="Directories" number={count.value} />;
+  return <HeroCard title="Directories" number={count.value} />;
+};
+
+const StartupsCount = async () => {
+  const count = await getStartupsCount();
+  return <HeroCard title="Startups" number={count.value} />;
 };
 
 const Hero = () => {
@@ -22,8 +28,11 @@ const Hero = () => {
         </p>
       </div>
       <div className='grid gap-4 sm:grid-cols-2'>
-        <Suspense fallback={<HeroCard url="/startups" title="Startups" />}>
-          <StartupCount />
+        <Suspense fallback={<HeroCard title="Directories" />}>
+          <DirectoriesCount />
+        </Suspense>
+        <Suspense fallback={<HeroCard title="Startups" />}>
+          <StartupsCount />
         </Suspense>
       </div>
     </section>

@@ -1,18 +1,21 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useOptimistic, useTransition } from 'react';
+import { useOptimistic, useState, useTransition } from 'react';
 
+import { Button } from '@d21/design-system/components/ui/button';
 import { Input } from '@d21/design-system/components/ui/input';
 
 import { parseDashboardSearchParams, stringifyDashboardSearchParams } from '@/lib/utils';
 import type { DashboardSearchParams } from '@/lib/utils';
+import { CreateDirectorySheet } from './create-directory-sheet';
 
 const DashboardFilters = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
     const initialFilters = parseDashboardSearchParams(Object.fromEntries(searchParams));
 
     const [optimisticFilters, setOptimisticFilters] =
@@ -51,6 +54,17 @@ const DashboardFilters = () => {
                     onChange={(e) => handleFilterChange(e.target.value)}
                 />
             </div>
+            <Button
+                onClick={() => setIsCreateSheetOpen(true)}
+                className="flex items-center gap-2"
+            >
+                <Plus className='w-4 h-4' />
+                Nuova Directory
+            </Button>
+            <CreateDirectorySheet
+                isOpen={isCreateSheetOpen}
+                onOpenChange={setIsCreateSheetOpen}
+            />
         </div>
     );
 };

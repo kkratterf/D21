@@ -105,8 +105,11 @@ const CommandItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Item
     ref={ref}
+    key={props.value}
+    value={props.value}
+    onSelect={props.onSelect}
     className={cn(
-      "aria-selected:bg-item-hover hover:bg-item-hover text-sm data-[disabled]:text-disabled ![&>svg]:size-4 relative flex h-9 cursor-pointer w-full select-none items-center gap-2 rounded-lg px-3 outline-none",
+      "aria-selected:bg-item-hover hover:bg-item-hover text-sm data-[disabled]:text-disabled ![&>svg]:size-4 relative flex h-9 cursor-pointer select-none items-center gap-2 rounded-lg !text px-3 outline-none",
       className
     )}
     {...props}

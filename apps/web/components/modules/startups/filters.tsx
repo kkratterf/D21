@@ -1,23 +1,26 @@
 'use client';
 
-import { ArrowDownAZ, ArrowDownNarrowWide, ArrowDownWideNarrow, ArrowDownZA, DollarSign, type LucideIcon, Tags, Users, X } from 'lucide-react';
+import { ArrowDownAZ, ArrowDownNarrowWide, ArrowDownWideNarrow, ArrowDownZA, DollarSign, type LucideIcon, Plus, Tags, Users, X } from 'lucide-react';
 import { useRouter, useSearchParams, } from 'next/navigation';
-import { useOptimistic, useTransition } from 'react';
+import { useOptimistic, useState, useTransition } from 'react';
 
 import { Button } from '@d21/design-system/components/ui/button';
 import { Input } from '@d21/design-system/components/ui/input';
 import { Skeleton } from '@d21/design-system/components/ui/skeleton';
 import { Tooltip } from '@d21/design-system/components/ui/tooltip';
 
+import { SubmitStartupSheet } from '@/components/modules/startups/submit-sheet';
 import { Filter } from '@/components/ui/filter';
 import { Sort } from '@/components/ui/sort';
 import type { StartupOrder } from '@/types/startup';
+import Link from 'next/link';
 
 interface IProps {
     searchParams: URLSearchParams;
     tags: { label: string; value: string; }[];
     fundingStages: { label: string; value: string; }[];
     teamSizes: { label: string; value: string; }[];
+    directorySlug: string;
 }
 
 export interface StartupSearchParams {
@@ -57,9 +60,11 @@ const StartupsFiltersWithParams = ({
     tags,
     fundingStages,
     teamSizes,
+    directorySlug,
 }: IProps) => {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const [isSubmitSheetOpen, setIsSubmitSheetOpen] = useState(false);
 
     // Parse search params
     const initialFilters: StartupSearchParams = {
@@ -190,13 +195,42 @@ const StartupsFiltersWithParams = ({
                         </Tooltip>
                     )}
                 </div>
-                <Sort
-                    options={SortOptions}
-                    selectedValues={getSelectedValues('sort')}
-                    onFilterChange={(values) => handleFacetedFilterChange('sort', values)}
-                    singleOption
-                />
+                <div className='flex items-center gap-2'>
+                    <Tooltip content="Submit Startup">
+                        <Button
+                            variant="primary"
+                            size="small"
+                            onClick={() => setIsSubmitSheetOpen(true)}
+                            className='hidden md:flex'
+                        >
+                            <Plus className="size-4" />
+                            <span className='hidden lg:flex'>Submit Startup</span>
+                        </Button>
+                    </Tooltip>
+                    <Button>
+                        <Link href={`/${directorySlug}/map`}>Map</Link>
+                    </Button>
+                    <Button
+                        variant="primary"
+                        size="small"
+                        onClick={() => setIsSubmitSheetOpen(true)}
+                        className='md:hidden'
+                    >
+                        <Plus className="size-4" />
+                    </Button>
+                    <Sort
+                        options={SortOptions}
+                        selectedValues={getSelectedValues('sort')}
+                        onFilterChange={(values) => handleFacetedFilterChange('sort', values)}
+                        singleOption
+                    />
+                </div>
             </div>
+            <SubmitStartupSheet
+                isOpen={isSubmitSheetOpen}
+                onOpenChange={setIsSubmitSheetOpen}
+                directorySlug={directorySlug}
+            />
         </div>
     );
 };
@@ -205,11 +239,12 @@ interface StartupFiltersProps {
     tags: { label: string; value: string; }[];
     fundingStages: { label: string; value: string; }[];
     teamSizes: { label: string; value: string; }[];
+    directorySlug: string;
 }
 
-const StartupFilters = ({ tags, fundingStages, teamSizes }: StartupFiltersProps) => {
+const StartupFilters = ({ tags, fundingStages, teamSizes, directorySlug }: StartupFiltersProps) => {
     const searchParams = useSearchParams();
-    return <StartupsFiltersWithParams searchParams={searchParams} tags={tags} fundingStages={fundingStages} teamSizes={teamSizes} />;
+    return <StartupsFiltersWithParams searchParams={searchParams} tags={tags} fundingStages={fundingStages} teamSizes={teamSizes} directorySlug={directorySlug} />;
 }
 
 export default StartupFilters;

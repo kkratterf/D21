@@ -51,6 +51,7 @@ export const getDirectoriesWithPagination = async ({
 
     const query = {
         where: {
+            visible: true,
             ...(featured !== undefined && { featured: featured }),
             name: name ? {
                 contains: name,
@@ -91,6 +92,9 @@ export async function getDirectories(options?: {
     page?: number
 }) {
     return await prisma.directory.findMany({
+        where: {
+            visible: true
+        },
         include: {
             _count: {
                 select: {
@@ -114,6 +118,7 @@ export async function getDirectories(options?: {
 export async function getFeaturedDirectories() {
     const directories = await prisma.directory.findMany({
         where: {
+            visible: true,
             featured: true
         },
         include: {
@@ -184,36 +189,45 @@ export async function createDirectoryAction(formData: FormData) {
     const description = formData.get('description') as string
     const imageUrl = formData.get('imageUrl') as string
     const link = formData.get('link') as string
-    const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
+    const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
     const location = formData.get('location') as string
     const longitude = formData.get('longitude') ? Number.parseFloat(formData.get('longitude') as string) : null
     const latitude = formData.get('latitude') ? Number.parseFloat(formData.get('latitude') as string) : null
     const slug = formData.get('slug') as string
 
+    // Verifica che lo slug sia univoco
+    const isSlugUnique = await checkSlugUniqueness(slug)
+    if (!isSlugUnique) {
+        throw new Error('Slug già esistente. Scegli un altro slug.')
+    }
+
     await prisma.directory.create({
         data: {
             name,
             description,
-            imageUrl,
-            link,
+            imageUrl: imageUrl || null,
+            link: link || null,
             tags,
-            location,
+            location: location || null,
             longitude,
             latitude,
             userId: user.id,
             slug,
-            featured: false
+            featured: false,
+            visible: false
         }
     })
 
     revalidatePath('/')
+    revalidatePath('/dashboard')
     return { success: true }
 }
 
 export async function getDirectoryBySlug(slug: string) {
     const directory = await prisma.directory.findUnique({
         where: {
-            slug
+            slug,
+            visible: true
         },
         include: {
             _count: {
@@ -307,12 +321,19 @@ export async function checkSlugUniqueness(slug: string) {
 }
 
 export async function getDirectoriesCount() {
-    const count = await prisma.directory.count()
+    const count = await prisma.directory.count({
+        where: {
+            visible: true
+        }
+    })
     return { value: count }
 }
 
 export async function getDirectoryTags() {
     const directories = await prisma.directory.findMany({
+        where: {
+            visible: true
+        },
         select: {
             tags: true
         }
@@ -364,4 +385,151 @@ export async function getUserDirectories() {
             createdAt: 'desc'
         }
     })
+}
+
+export async function getUserDirectoryTags() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return []
+    }
+
+    const directories = await prisma.directory.findMany({
+        where: {
+            userId: user.id
+        },
+        select: {
+            tags: true
+        }
+    });
+
+    // Estrai tutti i tag e rimuovi duplicati
+    const allTags = directories
+        .flatMap(directory => directory.tags)
+        .filter((tag): tag is string => tag !== null && tag !== undefined)
+        .filter((tag, index, self) => self.indexOf(tag) === index)
+        .sort();
+
+    return allTags;
+}
+
+export async function setDirectoryVisibility(slug: string, visible: boolean) {
+    const directory = await prisma.directory.update({
+        where: { slug },
+        data: { visible }
+    })
+
+    revalidatePath('/')
+    revalidatePath('/dashboard')
+    return directory
+}
+
+export async function updateDirectoryAction(formData: FormData) {
+    const directoryId = formData.get('directoryId') as string
+    const name = formData.get('name') as string
+    const description = formData.get('description') as string
+    const imageUrl = formData.get('imageUrl') ? (formData.get('imageUrl') as string) : null
+    const link = formData.get('link') ? (formData.get('link') as string) : null
+    const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
+    const location = formData.get('location') ? (formData.get('location') as string) : null
+    const longitude = formData.get('longitude') ? Number.parseFloat(formData.get('longitude') as string) : null
+    const latitude = formData.get('latitude') ? Number.parseFloat(formData.get('latitude') as string) : null
+    const slug = formData.get('slug') as string
+
+    // Verifica che la directory esista e che l'utente abbia accesso
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        throw new Error('Not authenticated')
+    }
+
+    // Verifica che la directory esista e che l'utente abbia accesso
+    const existingDirectory = await prisma.directory.findUnique({
+        where: { id: directoryId }
+    })
+
+    if (!existingDirectory) {
+        throw new Error('Directory not found')
+    }
+
+    // Verifica che l'utente abbia accesso alla directory usando l'ID
+    if (existingDirectory.userId !== user.id) {
+        throw new Error('You do not have access to this directory')
+    }
+
+    await prisma.directory.update({
+        where: { id: directoryId },
+        data: {
+            name,
+            description,
+            imageUrl,
+            link,
+            tags,
+            location,
+            longitude,
+            latitude,
+            slug,
+        }
+    })
+
+    // Revalidate le pagine che potrebbero essere influenzate
+    revalidatePath('/')
+    revalidatePath('/dashboard')
+    revalidatePath(`/dashboard/${existingDirectory.slug}`)
+    revalidatePath(`/dashboard/${slug}`)
+    revalidatePath(`/${existingDirectory.slug}`)
+    revalidatePath(`/${slug}`)
+
+    return { success: true }
+}
+
+export async function toggleDirectoryVisibility(directoryId: string) {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            return { success: false, message: 'Not authenticated' }
+        }
+
+        // Get the directory to check access
+        const directory = await prisma.directory.findUnique({
+            where: { id: directoryId }
+        })
+
+        if (!directory) {
+            return { success: false, message: 'Directory not found' }
+        }
+
+        // Check if user has access to the directory
+        if (directory.userId !== user.id) {
+            return { success: false, message: 'You do not have access to this directory' }
+        }
+
+        // Toggle visibility
+        const updatedDirectory = await prisma.directory.update({
+            where: { id: directoryId },
+            data: { visible: !directory.visible }
+        })
+
+        // Revalidate the dashboard page to update the UI
+        revalidatePath('/dashboard')
+        revalidatePath(`/dashboard/${directory.slug}`)
+        revalidatePath(`/${directory.slug}`)
+        revalidatePath('/')
+
+        return {
+            success: true,
+            message: updatedDirectory.visible ? '👀 Directory visible' : '🙈 Directory hidden',
+            visible: updatedDirectory.visible,
+            directoryId: updatedDirectory.id
+        }
+    } catch (error) {
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : 'An unexpected error occurred'
+        }
+    }
 }

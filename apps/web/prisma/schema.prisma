@@ -21,6 +21,7 @@ model Directory {
   userId        String
   startups      Startup[]
   featured      Boolean   @default(false)
+  visible       Boolean   @default(false)
   location      String?
   longitude     Float?
   latitude      Float?

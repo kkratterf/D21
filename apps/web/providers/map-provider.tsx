@@ -26,7 +26,7 @@ export default function MapProvider({
 }: MapComponentProps) {
   const map = useRef<mapboxgl.Map | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const { theme, systemTheme } = useTheme();
+  const { theme, systemTheme, resolvedTheme } = useTheme();
   const [points, setPoints] = useState<Point[]>([]);
   const [mapStyle, setMapStyle] = useState<string | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
@@ -49,25 +49,17 @@ export default function MapProvider({
     childrenRef.current = children;
   }, [children]);
 
-  // Clean up markers when children change
+  // Initialize map style - aspetta che il tema sia risolto
   useEffect(() => {
-    if (!map.current) {
-      return;
-    }
+    if (!resolvedTheme) return; // Aspetta che il tema sia risolto
 
-    // Remove all existing markers
-    const markers = document.getElementsByClassName('marker');
-    while (markers.length > 0) {
-      markers[0].remove();
-    }
-  }, []);
+    const newStyle = `mapbox://styles/mapbox/${resolvedTheme === 'dark' ? 'dark-v11' : 'light-v11'}`;
 
-  // Initialize map style
-  useEffect(() => {
-    const currentTheme = theme === 'system' ? systemTheme : theme;
-    const newStyle = `mapbox://styles/mapbox/${currentTheme === 'dark' ? 'dark-v11' : 'light-v11'}`;
-    setMapStyle(newStyle);
-  }, [theme, systemTheme]);
+    // Imposta lo stile solo se non è già stato impostato
+    if (!mapStyle) {
+      setMapStyle(newStyle);
+    }
+  }, [resolvedTheme, mapStyle]);
 
   // Initialize map
   useEffect(() => {
@@ -78,7 +70,6 @@ export default function MapProvider({
 
     if (!mapContainerRef.current || map.current || !mapStyle) return;
 
-    console.log('Creating new map instance');
     map.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: mapStyle,
@@ -89,19 +80,20 @@ export default function MapProvider({
     });
 
     const handleLoad = () => {
-      console.log('Map loaded, setting states');
       setLoaded(true);
+    };
+
+    const handleStyleLoad = () => {
       setIsMapReady(true);
     };
 
     map.current.on("load", handleLoad);
-    map.current.on("style.load", handleLoad);
+    map.current.on("style.load", handleStyleLoad);
 
     return () => {
-      console.log('Cleaning up map instance');
       if (map.current) {
         map.current.off("load", handleLoad);
-        map.current.off("style.load", handleLoad);
+        map.current.off("style.load", handleStyleLoad);
         map.current.remove();
         map.current = null;
       }
@@ -110,58 +102,16 @@ export default function MapProvider({
     };
   }, [initialViewState, mapContainerRef, mapStyle]);
 
-  // Handle map load state
-  useEffect(() => {
-    const handleStyleLoad = () => {
-      console.log('Style loaded, setting isMapReady to true');
-      setIsMapReady(true);
-    };
-
-    const currentMap = map.current;
-    if (currentMap) {
-      currentMap.on('style.load', handleStyleLoad);
-      currentMap.on('load', handleStyleLoad);
-    }
-
-    return () => {
-      if (currentMap) {
-        currentMap.off('style.load', handleStyleLoad);
-        currentMap.off('load', handleStyleLoad);
-      }
-    };
-  }, []);
-
-  // Update map style
-  useEffect(() => {
-    if (!map.current || !mapStyle) return;
-
-    const updateStyle = async () => {
-      try {
-        console.log('Updating map style');
-        setIsMapReady(false);
-        await map.current?.setStyle(mapStyle);
-        // Add a small delay to ensure the style is fully loaded
-        setTimeout(() => {
-          console.log('Map style updated, setting isMapReady to true');
-          setIsMapReady(true);
-        }, 100);
-      } catch (error) {
-        console.error('Error updating map style:', error);
-        setIsMapReady(true); // Reset state even on error
-      }
-    };
-
-    updateStyle();
-  }, [mapStyle]);
-
-  if (!map.current || !loaded) {
-    console.log('Map not ready:', { map: !!map.current, loaded });
-    return null;
+  if (!map.current || !loaded || !resolvedTheme) {
+    return (
+      <div className='inset-0 flex h-full w-full items-center justify-center bg-background'>
+        <Loader2 className='size-4 animate-spin' />
+      </div>
+    );
   }
 
   return (
     <div className="z-0">
-
       <MapContext.Provider
         value={{
           map: map.current,
@@ -175,12 +125,6 @@ export default function MapProvider({
         <MapControls />
         {children}
       </MapContext.Provider>
-
-      {!loaded && (
-        <div className='absolute inset-0 flex items-center justify-center bg-subtle'>
-          <Loader2 className='size-5 animate-spin' />
-        </div>
-      )}
     </div>
   );
 }

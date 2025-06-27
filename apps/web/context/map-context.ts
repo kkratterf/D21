@@ -10,7 +10,7 @@ export interface Point {
 }
 
 interface MapContextType {
-  map: mapboxgl.Map | null;
+  map: mapboxgl.Map;
   points: Point[];
   addPoint: (point: Point) => void;
   removePoint: (id: string) => void;
@@ -27,3 +27,4 @@ export function useMap() {
   }
   return context;
 }
+

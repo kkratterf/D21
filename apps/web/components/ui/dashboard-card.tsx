@@ -6,9 +6,15 @@ import {
     AvatarFallback,
     AvatarImage,
 } from '@d21/design-system/components/ui/avatar';
+import { Badge } from '@d21/design-system/components/ui/badge';
+import { Button } from '@d21/design-system/components/ui/button';
 import { Skeleton } from '@d21/design-system/components/ui/skeleton';
 import { Tag } from '@d21/design-system/components/ui/tag';
 import { cn, focusRing } from '@d21/design-system/lib/utils';
+import { Eye, EyeOff, Settings } from 'lucide-react';
+
+import { DirectoryVisibilitySwitch } from '../modules/dashboard/directory-visibility-switch';
+import { EditDirectoryButton } from '../modules/dashboard/edit-directory-button';
 
 interface DashboardCardProps {
     item: Directory & {
@@ -20,12 +26,12 @@ interface DashboardCardProps {
 
 const DashboardCard = ({ item }: DashboardCardProps) => {
     return (
-        <Link
-            key={item.name}
-            href={`/dashboard/${item.slug}`}
-            className={cn('rounded-xl', focusRing)}
-        >
-            <div className='group group flex items-center gap-3 hover:bg-item-hover px-3 py-2 rounded-xl flew-row'>
+        <div className='group flex items-center gap-3 hover:bg-item-hover px-3 py-2 rounded-xl flew-row'>
+            <Link
+                key={item.name}
+                href={`/dashboard/${item.slug}`}
+                className={cn('flex flex-1 items-center gap-3', focusRing)}
+            >
                 <Avatar className='border border-border rounded-xl size-10'>
                     <AvatarImage
                         className='group-hover:scale-105 transition-all duration-400'
@@ -51,8 +57,38 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                         </Tag>
                     </div>
                 </div>
+            </Link>
+            <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
+                <Badge variant={item.visible ? "default" : "warning"} className="flex items-center gap-1">
+                    {item.visible ? (
+                        <>
+                            <Eye className='w-3 h-3' />
+                            Visibile
+                        </>
+                    ) : (
+                        <>
+                            <EyeOff className='w-3 h-3' />
+                            Nascosta
+                        </>
+                    )}
+                </Badge>
+                <DirectoryVisibilitySwitch
+                    directoryId={item.id}
+                    isVisible={item.visible}
+                />
+                <EditDirectoryButton directory={item} />
+                <Button
+                    asChild
+                    variant="text"
+                    size="small"
+                >
+                    <Link href={`/dashboard/${item.slug}`}>
+                        <Settings className='w-4 h-4' />
+                        <span className="sr-only">Gestisci Startup</span>
+                    </Link>
+                </Button>
             </div>
-        </Link>
+        </div>
     );
 };
 
