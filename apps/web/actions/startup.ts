@@ -1,9 +1,9 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
+import { createClient } from '@/lib/supabase/server'
 import type { GetStartups, StartupOrder } from '@/types/startup'
 import { PAGE_SIZE, } from '@/types/startup'
-import { createClient } from '@/lib/supabase/server'
 import { Decimal } from 'decimal.js'
 import { checkDirectoryAccess } from './directory'
 
@@ -377,4 +377,72 @@ export async function getStartupById(id: string) {
         ...startup,
         amountRaised: startup.amountRaised ? Number(startup.amountRaised) : null
     }
+}
+
+export async function getStartupsByDirectory({
+    directorySlug,
+    name,
+    tags,
+    fundingStages,
+    teamSizes,
+    page = 1,
+    sort = "nameAsc"
+}: {
+    directorySlug: string;
+    name?: string;
+    tags?: string[];
+    fundingStages?: string[];
+    teamSizes?: string[];
+    page?: number;
+    sort?: StartupOrder;
+}) {
+    // First check if the directory exists
+    const directory = await prisma.directory.findUnique({
+        where: { slug: directorySlug }
+    });
+
+    if (!directory) {
+        return { startups: [], count: 0 };
+    }
+
+    const fullInclude = {
+        ...includeForUsefullDataStartup,
+    };
+
+    const query = {
+        where: {
+            visible: true,
+            directoryId: directory.id,
+            name: name ? {
+                contains: name,
+                mode: 'insensitive' as const
+            } : undefined,
+            tags: tags?.length ? {
+                hasSome: tags
+            } : undefined,
+            fundingStageId: fundingStages?.length ? {
+                in: fundingStages
+            } : undefined,
+            teamSizeId: teamSizes?.length ? {
+                in: teamSizes
+            } : undefined,
+        },
+        orderBy: getOrderBy(sort),
+        take: PAGE_SIZE,
+        skip: (page - 1) * PAGE_SIZE,
+        include: fullInclude
+    };
+
+    // Fetch startups and count in una transazione per efficienza
+    const [startups, count] = await prisma.$transaction([
+        prisma.startup.findMany(query),
+        prisma.startup.count({ where: query.where })
+    ]);
+
+    const processedStartups = startups.map(startup => ({
+        ...startup,
+        amountRaised: startup.amountRaised ? Number(startup.amountRaised) : null
+    }));
+
+    return { startups: processedStartups, count };
 }
