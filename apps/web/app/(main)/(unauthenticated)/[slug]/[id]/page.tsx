@@ -1,10 +1,9 @@
 import { getStartupById } from '@/actions/startup'
-import { StartupContent } from '@/components/slug/id/content'
-import { SlugHeader } from '@/components/slug/id/header'
-import { ContentLoading } from '@/components/slug/id/loading'
+import LeftPanel from '@/components/modules/startup-detail/left-panel'
+import RightPanel from '@/components/modules/startup-detail/right-panel'
+import Empty from '@/components/ui/empty'
 import { emptyMetadata, startupMetadata } from '@/lib/metadata'
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 
 interface SlugPageProps {
     params: Promise<{
@@ -28,14 +27,18 @@ export async function generateMetadata(
 }
 
 export default async function SlugPage({ params }: SlugPageProps) {
-    const { slug, id } = await params;
+    const { id } = await params;
+
+    const startup = await getStartupById(id);
+
+    if (!startup) {
+        return <Empty description="Something went wrong. But hey, don't give up! Try again later." />;
+    }
 
     return (
-        <div className='relative flex h-full w-full flex-col'>
-            <SlugHeader id={id} />
-            <Suspense fallback={<ContentLoading />}>
-                <StartupContent id={id} />
-            </Suspense>
+        <div className='relative flex min-h-dvh w-full flex-col gap-4 p-6 pb-0 lg:flex-row'>
+            <LeftPanel startup={startup} />
+            <RightPanel startup={startup} />
         </div>
     )
 }

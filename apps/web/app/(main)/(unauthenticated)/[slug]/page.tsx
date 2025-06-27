@@ -1,12 +1,17 @@
 import { getDirectoryBySlug } from '@/actions/directory'
 import { getStartupsByDirectory } from '@/actions/startup'
+import { getStartupFundingStages, getStartupTags, getStartupTeamSizes } from '@/actions/tags'
+import NavMobile from '@/components/layout/nav-mobile'
+import StartupFilters, { StartupFiltersSkeleton } from '@/components/modules/startups/filters'
 import { StartupPagination } from '@/components/modules/startups/pagination'
+import ScrollToTop from '@/components/scrollToTopClient'
 import Empty from '@/components/ui/empty'
 import StartupCard from '@/components/ui/startup-card'
 import { directoryMetadata, emptyMetadata } from '@/lib/metadata'
 import { PAGE_SIZE } from '@/types/startup'
 import type { StartupOrder } from '@/types/startup'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 interface SlugPageProps {
     params: Promise<{
@@ -27,6 +32,47 @@ export async function generateMetadata(
         return emptyMetadata;
     }
     return directoryMetadata(directory);
+}
+
+async function DirectoryHeader({ slug }: { slug: string }) {
+    const directory = await getDirectoryBySlug(slug);
+
+    if (!directory) {
+        return (
+            <div className='flex items-center justify-between px-7'>
+                <h1 className="font-brand text-3xl">Directory non trovata</h1>
+                <NavMobile />
+            </div>
+        );
+    }
+
+    return (
+        <div className='flex items-center justify-between px-7'>
+            <div>
+                <h1 className="font-brand text-3xl">{directory.name}</h1>
+                {directory.description && (
+                    <p className="mt-1 text-description">{directory.description}</p>
+                )}
+            </div>
+            <NavMobile />
+        </div>
+    );
+}
+
+async function StartupFiltersWrapper({ slug }: { slug: string }) {
+    const [availableTags, availableFundingStages, availableTeamSizes] = await Promise.all([
+        getStartupTags(slug),
+        getStartupFundingStages(slug),
+        getStartupTeamSizes(slug)
+    ]);
+
+    return (
+        <StartupFilters
+            tags={availableTags}
+            fundingStages={availableFundingStages}
+            teamSizes={availableTeamSizes}
+        />
+    );
 }
 
 export default async function SlugPage({ params, searchParams }: SlugPageProps) {
@@ -62,33 +108,42 @@ export default async function SlugPage({ params, searchParams }: SlugPageProps) 
     const pages = Math.ceil(total / PAGE_SIZE);
 
     return (
-        <>
-            <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
-                {startups.length === 0 ? (
-                    <Empty description="Non ci sono ancora startup in questa directory. Ma hey, non arrenderti! Prova più tardi." />
-                ) : (
-                    startups.map((startup) => (
-                        <StartupCard
-                            key={startup.id}
-                            item={startup}
-                            selectedTags={tags || []}
-                            selectedFundingStages={fundingStages || []}
-                            selectedTeamSizes={teamSizes || []}
-                        />
-                    ))
-                )}
-            </div>
-            <StartupPagination
-                currentPage={page}
-                searchParams={{
-                    name,
-                    page: page.toString(),
-                    sort
-                }}
-                totalPages={pages}
-                totalResults={total}
-            />
-        </>
+        <div className="flex flex-col pt-6">
+            <Suspense>
+                <DirectoryHeader slug={slug} />
+            </Suspense>
+            <Suspense fallback={<StartupFiltersSkeleton />}>
+                <StartupFiltersWrapper slug={slug} />
+            </Suspense>
+            <Suspense>
+                <ScrollToTop />
+                <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
+                    {startups.length === 0 ? (
+                        <Empty description="Non ci sono ancora startup in questa directory. Ma hey, non arrenderti! Prova più tardi." />
+                    ) : (
+                        startups.map((startup) => (
+                            <StartupCard
+                                key={startup.id}
+                                item={startup}
+                                selectedTags={tags || []}
+                                selectedFundingStages={fundingStages || []}
+                                selectedTeamSizes={teamSizes || []}
+                            />
+                        ))
+                    )}
+                </div>
+                <StartupPagination
+                    currentPage={page}
+                    searchParams={{
+                        name,
+                        page: page.toString(),
+                        sort
+                    }}
+                    totalPages={pages}
+                    totalResults={total}
+                />
+            </Suspense>
+        </div>
     )
 }
 

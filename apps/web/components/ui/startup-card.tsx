@@ -37,7 +37,7 @@ const StartupCard = ({
     return (
         <Link
             key={item.name}
-            href={`/startup/${item.slug}`}
+            href={`/${item.directory.slug}/${item.id}`}
             className={cn('rounded-xl', focusRing)}
         >
             <div className='group group flew-row flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-item-hover'>
