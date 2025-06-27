@@ -3,7 +3,7 @@
 import { useMap } from "@/context/map-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@d21/design-system/components/ui/avatar";
 import { Tooltip, TooltipProvider } from "@d21/design-system/components/ui/tooltip";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, } from "react";
 import Marker from "./map-marker";
 
 interface Startup {
@@ -42,45 +42,52 @@ function isValidLongitude(lng: number | null): lng is number {
     return lng !== null && Number.isFinite(lng) && lng >= -180 && lng <= 180;
 }
 
-// Funzione per calcolare il bounding box dei marker
 function calculateBoundingBox(startups: Startup[]) {
+    if (startups.length === 0) return null;
+
+    let minLat = Number.POSITIVE_INFINITY;
+    let maxLat = Number.NEGATIVE_INFINITY;
+    let minLng = Number.POSITIVE_INFINITY;
+    let maxLng = Number.NEGATIVE_INFINITY;
+
+    for (const startup of startups) {
+        if (isValidLatitude(startup.latitude) && isValidLongitude(startup.longitude)) {
+            minLat = Math.min(minLat, startup.latitude);
+            maxLat = Math.max(maxLat, startup.latitude);
+            minLng = Math.min(minLng, startup.longitude);
+            maxLng = Math.max(maxLng, startup.longitude);
+        }
+    }
+
+    if (minLat === Number.POSITIVE_INFINITY || maxLat === Number.NEGATIVE_INFINITY || minLng === Number.POSITIVE_INFINITY || maxLng === Number.NEGATIVE_INFINITY) {
+        return null;
+    }
+
+    const centerLat = (minLat + maxLat) / 2;
+    const centerLng = (minLng + maxLng) / 2;
+
+    return { centerLat, centerLng, minLat, maxLat, minLng, maxLng };
+}
+
+// Global flag to track if we've already centered the map
+let hasCenteredMap = false;
+let lastMapInstance: mapboxgl.Map | null = null;
+
+export default function StartupMarkers({ startups, loading = false }: StartupMarkersProps) {
+    const { map } = useMap();
     const validStartups = startups.filter(startup =>
         isValidLatitude(startup.latitude) && isValidLongitude(startup.longitude)
     );
 
-    if (validStartups.length === 0) return null;
+    // Reset flag if map instance changed
+    useEffect(() => {
+        if (map && map !== lastMapInstance) {
+            hasCenteredMap = false;
+            lastMapInstance = map;
+        }
+    }, [map]);
 
-    const latitudes = validStartups.map(s => s.latitude);
-    const longitudes = validStartups.map(s => s.longitude);
-
-    const minLat = Math.min(...latitudes);
-    const maxLat = Math.max(...latitudes);
-    const minLng = Math.min(...longitudes);
-    const maxLng = Math.max(...longitudes);
-
-    return {
-        minLat,
-        maxLat,
-        minLng,
-        maxLng,
-        centerLat: (minLat + maxLat) / 2,
-        centerLng: (minLng + maxLng) / 2
-    };
-}
-
-export default function StartupMarkers({ startups, loading = false }: StartupMarkersProps) {
-    const { map, isMapReady } = useMap();
-    const hasCenteredRef = useRef(false);
-    const [markersReady, setMarkersReady] = useState(false);
-
-    console.log('📍 StartupMarkers: Render', {
-        startupsCount: startups.length,
-        loading,
-        isMapReady,
-        markersReady,
-        hasCentered: hasCenteredRef.current
-    });
-
+    // Handle startup selection
     useEffect(() => {
         const handleStartupSelect = (event: CustomEvent) => {
             const { coordinates } = event.detail;
@@ -99,107 +106,72 @@ export default function StartupMarkers({ startups, loading = false }: StartupMar
         };
     }, [map]);
 
-    // Effetto per centrare la mappa sui marker dopo che sono stati caricati
+    // Center map on markers once
     useEffect(() => {
-        console.log('🎯 StartupMarkers: Checking centering conditions', {
-            map: !!map,
-            hasCentered: hasCenteredRef.current,
-            loading,
-            isMapReady,
-            markersReady,
-            startupsCount: startups.length
-        });
+        if (!map || hasCenteredMap || loading || validStartups.length === 0) {
+            return;
+        }
 
-        // Aspetta che il caricamento sia completato e che ci siano startup
-        if (!map || hasCenteredRef.current || loading || !isMapReady || !markersReady || startups.length === 0) return;
-
-        const validStartups = startups.filter(startup =>
-            isValidLatitude(startup.latitude) && isValidLongitude(startup.longitude)
-        );
-
-        if (validStartups.length === 0) return;
-
-        console.log('🚀 StartupMarkers: Executing flyTo with', validStartups.length, 'valid startups');
-
-        // Centra immediatamente senza timer
         const boundingBox = calculateBoundingBox(validStartups);
-
         if (boundingBox) {
             map.flyTo({
                 center: [boundingBox.centerLng, boundingBox.centerLat],
                 zoom: 4,
                 duration: 1500
             });
-            hasCenteredRef.current = true;
-            console.log('✅ StartupMarkers: flyTo completed');
+            hasCenteredMap = true;
         }
-    }, [map, startups, loading, isMapReady, markersReady]);
+    }, [map, validStartups, loading]);
 
-    // Marca i marker come pronti dopo che sono stati renderizzati
-    useEffect(() => {
-        if (isMapReady && startups.length > 0) {
-            console.log('⏰ StartupMarkers: Setting timer for markers ready');
-            // Aspetta che tutti i marker siano renderizzati
-            const timer = setTimeout(() => {
-                console.log('✅ StartupMarkers: Markers ready');
-                setMarkersReady(true);
-            }, 500); // Aumentato per dare più tempo ai marker di renderizzarsi
-            return () => clearTimeout(timer);
-        }
-    }, [isMapReady, startups.length]);
-
-    // Non renderizzare i marker se la mappa non è pronta o se è in loading
-    if (loading || !isMapReady) {
-        console.log('🚫 StartupMarkers: Not rendering markers', { loading, isMapReady });
+    // Don't render if loading
+    if (loading) {
         return null;
     }
 
     return (
         <>
-            {startups.map((startup) =>
-                isValidLatitude(startup.latitude) && isValidLongitude(startup.longitude) ? (
-                    <Marker
-                        key={startup.id}
-                        longitude={startup.longitude}
-                        latitude={startup.latitude}
-                        data={{
-                            type: 'Feature',
-                            properties: {
-                                name: startup.name,
-                                imageUrl: startup.logoUrl || "",
-                                mapbox_id: startup.id,
-                                feature_type: 'startup',
-                                coordinates: {
-                                    latitude: startup.latitude,
-                                    longitude: startup.longitude
-                                },
-                                context: {
-                                    country: {
-                                        name: 'Italy',
-                                        country_code: 'IT',
-                                        country_code_alpha_3: 'ITA'
-                                    }
-                                }
+            {validStartups.map((startup) => (
+                <Marker
+                    key={startup.id}
+                    longitude={startup.longitude}
+                    latitude={startup.latitude}
+                    data={{
+                        type: 'Feature',
+                        properties: {
+                            name: startup.name,
+                            imageUrl: startup.logoUrl || "",
+                            mapbox_id: startup.id,
+                            feature_type: 'startup',
+                            coordinates: {
+                                latitude: startup.latitude,
+                                longitude: startup.longitude
                             },
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [startup.longitude, startup.latitude]
+                            context: {
+                                country: {
+                                    name: 'Italy',
+                                    country_code: 'IT',
+                                    country_code_alpha_3: 'ITA'
+                                }
                             }
-                        }}
-                    >
-                        <TooltipProvider delayDuration={200}>
-                            <Tooltip side="top" content={startup.name}>
-                                <div className='border-0 bg-transparent p-0'>
-                                    <Avatar className='size-9 transform rounded-lg border border-default transition-all duration-200 hover:scale-110'>
-                                        <AvatarImage src={startup.logoUrl || ""} />
-                                        <AvatarFallback>{startup.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                </div>
-                            </Tooltip>
-                        </TooltipProvider>
-                    </Marker>
-                ) : null
-            )}
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [startup.longitude, startup.latitude]
+                        }
+                    }}
+                >
+                    <TooltipProvider delayDuration={200}>
+                        <Tooltip side="top" content={startup.name}>
+                            <div className='border-0 bg-transparent p-0'>
+                                <Avatar className='size-9 transform rounded-lg border border-default transition-all duration-200 hover:scale-110'>
+                                    <AvatarImage src={startup.logoUrl || ""} />
+                                    <AvatarFallback>{startup.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                            </div>
+                        </Tooltip>
+                    </TooltipProvider>
+                </Marker>
+            ))}
         </>
     );
 } 
