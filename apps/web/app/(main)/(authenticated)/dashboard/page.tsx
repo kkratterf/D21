@@ -1,14 +1,15 @@
 import { getUserDirectoriesWithPagination } from '@/actions/directory';
 import NavMobile from '@/components/layout/nav-mobile';
 import { DashboardFiltersClient } from '@/components/modules/dashboard/dashboard-filters-client';
-import { DashboardPagination } from '@/components/modules/dashboard/pagination';
+import { DashboardFiltersSkeleton } from '@/components/modules/dashboard/filters-skeleton';
+import { DashboardPagination, DashboardPaginationSkeleton } from '@/components/modules/dashboard/pagination';
 import ScrollToTop from '@/components/scrollToTopClient';
 import DashboardCard from '@/components/ui/dashboard-card';
+import { DirectoryCardSkeleton } from '@/components/ui/directory-card';
 import Empty from '@/components/ui/empty';
 import { parseDashboardSearchParams } from '@/lib/utils';
 import { DIRECTORY_PAGE_SIZE } from '@/types/directory';
 import { Suspense } from 'react';
-import Loading from './loading';
 
 interface IProps {
     searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -57,7 +58,7 @@ export default async function DashboardPage(props: IProps) {
                 <h1 className="font-brand text-3xl">Dashboard</h1>
                 <NavMobile />
             </div>
-            <Suspense fallback={<Loading />}>
+            <Suspense fallback={<DashboardSkeleton />}>
                 <div className='sticky top-0 z-20 flex w-full flex-col border-default border-b bg-background px-6 py-4'>
                     <DashboardFiltersClient />
                 </div>
@@ -66,4 +67,18 @@ export default async function DashboardPage(props: IProps) {
             </Suspense>
         </div>
     );
+}
+
+const DashboardSkeleton = () => {
+    return <>
+        <div className='sticky top-0 z-20 border-border border-b bg-background px-6 py-4'>
+            <DashboardFiltersSkeleton />
+        </div>
+        <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
+            {Array.from({ length: 10 }, (_, i) => (
+                <DirectoryCardSkeleton key={i} />
+            ))}
+        </div>
+        <DashboardPaginationSkeleton />
+    </>
 }

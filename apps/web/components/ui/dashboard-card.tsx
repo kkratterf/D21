@@ -114,6 +114,7 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                         <Tooltip content={copied ? "Url copied" : "Copy url"}>
                             <Button
                                 icon
+                                disabled={!item.visible}
                                 variant="secondary"
                                 size="small"
                                 className='hidden rounded-r-none border-r-0 sm:flex'
