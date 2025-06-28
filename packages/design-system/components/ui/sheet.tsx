@@ -66,7 +66,7 @@ const SheetContent = React.forwardRef<
           ref={forwardedRef}
           className={cn(
             // base
-            "text-sm bg-elevated border-default fixed inset-y-2 mx-auto flex w-[95vw] flex-1 flex-col overflow-y-auto rounded-xl border p-4 shadow-lg focus:outline-none max-sm:inset-x-2 sm:inset-y-2 sm:right-2 sm:max-w-lg sm:p-6",
+            "text-sm bg-elevated border-default max-w-[95vw] fixed inset-y-2 mx-auto flex w-[95vw] flex-1 flex-col overflow-y-auto rounded-xl border px-4 pb-4 shadow-lg focus:outline-none max-sm:inset-x-2 sm:inset-y-2 sm:right-2 sm:max-w-lg sm:p-6 sm:pt-0",
             // transition
             "data-[state=closed]:animate-drawerSlideRightAndFade data-[state=open]:animate-drawerSlideLeftAndFade",
             focusRing,
@@ -87,7 +87,7 @@ const SheetHeader = React.forwardRef<HTMLDivElement, React.ComponentPropsWithout
     return (
       <div
         ref={ref}
-        className="flex justify-between items-start gap-x-4 pb-4 border-default border-b"
+        className="top-0 z-10 sticky flex justify-between items-start gap-x-4 bg-elevated py-4 border-default border-b"
         {...props}>
         <div className={cn("mt-1 flex flex-col gap-y-1", className)}>{children}</div>
         <SheetPrimitives.Close asChild>

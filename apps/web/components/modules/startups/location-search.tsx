@@ -51,7 +51,7 @@ export function LocationSearch({ form }: LocationSearchProps) {
     const renderSearchContent = () => {
         if (isSearching) {
             return (
-                <div className='px-5 py-6 !text-description text-sm'>
+                <div className='!text-description px-5 py-6 text-sm'>
                     Searching...
                 </div>
             )
@@ -59,7 +59,7 @@ export function LocationSearch({ form }: LocationSearchProps) {
 
         if (searchResults.length === 0) {
             return (
-                <div className='px-5 py-6 !text-description text-sm'>
+                <div className='!text-description px-5 py-6 text-sm'>
                     No results found. Try a different search.
                 </div>
             )
@@ -74,7 +74,7 @@ export function LocationSearch({ form }: LocationSearchProps) {
                         onSelect={() => handleLocationSelect(result)}
                         className="cursor-pointer"
                     >
-                        <span className='w-full line-clamp-1'>
+                        <span className='line-clamp-1 w-full'>
                             {result.display_name.split(',')[0]} <span className="text-description"> | {result.display_name.split(',').slice(1).join(',').trim()}</span>
                         </span>
                     </CommandItem>
@@ -97,13 +97,13 @@ export function LocationSearch({ form }: LocationSearchProps) {
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="secondary"
-                                    className={cn('line-clamp-1 w-full min-w-0 max-w-[384px] justify-between overflow-hidden truncate py-1 text-left font-normal text-description', field.value && '!text')}
+                                    className={cn('line-clamp-1 w-full min-w-0 max-w-[462px] justify-between overflow-hidden truncate py-1 text-left font-normal text-description', field.value && '!text')}
                                 >
                                     {field.value || "Enter your location..."}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent
-                                className='p-0 w-[--radix-popover-trigger-width]'
+                                className='w-[--radix-popover-trigger-width] p-0'
                                 align="start"
                                 sideOffset={4}
                             >

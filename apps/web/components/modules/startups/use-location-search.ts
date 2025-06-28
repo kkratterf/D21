@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface LocationResult {
     place_id: number
@@ -11,6 +11,7 @@ export function useLocationSearch() {
     const [searchResults, setSearchResults] = useState<LocationResult[]>([])
     const [isSearching, setIsSearching] = useState(false)
     const [searchValue, setSearchValue] = useState("")
+    const debounceTimeoutRef = useRef<any>()
 
     const searchLocation = useCallback(async (query: string) => {
         if (!query.trim()) {
@@ -33,11 +34,32 @@ export function useLocationSearch() {
         }
     }, [])
 
+    const debouncedSearch = useCallback((query: string) => {
+        // Clear existing timeout
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current)
+        }
+
+        // Set new timeout
+        debounceTimeoutRef.current = setTimeout(() => {
+            searchLocation(query)
+        }, 300)
+    }, [searchLocation])
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current)
+            }
+        }
+    }, [])
+
     return {
         searchResults,
         isSearching,
         searchValue,
         setSearchValue,
-        searchLocation,
+        searchLocation: debouncedSearch,
     }
 } 

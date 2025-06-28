@@ -150,6 +150,7 @@ export async function createStartupAction(formData: FormData) {
     const linkedinUrl = formData.get('linkedinUrl') as string
     const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
     const amountRaised = formData.get('amountRaised') ? new Decimal(formData.get('amountRaised') as string) : null
+    const currency = formData.get('currency') && (formData.get('currency') as string).trim() ? (formData.get('currency') as string).trim() : null
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
@@ -170,6 +171,7 @@ export async function createStartupAction(formData: FormData) {
             linkedinUrl,
             tags,
             amountRaised,
+            currency,
             directoryId: directory.id,
             visible: false
         }
@@ -215,6 +217,7 @@ export async function updateStartupAction(formData: FormData) {
     const linkedinUrl = formData.get('linkedinUrl') as string
     const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
     const amountRaised = formData.get('amountRaised') ? new Decimal(formData.get('amountRaised') as string) : null
+    const currency = formData.get('currency') && (formData.get('currency') as string).trim() ? (formData.get('currency') as string).trim() : null
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
@@ -236,6 +239,7 @@ export async function updateStartupAction(formData: FormData) {
             linkedinUrl,
             tags,
             amountRaised,
+            currency,
         }
     })
 
@@ -320,6 +324,7 @@ export async function getVisibleStartups(directoryId?: string) {
             contactEmail: true,
             linkedinUrl: true,
             amountRaised: true,
+            currency: true,
             directory: {
                 select: {
                     id: true,
@@ -366,6 +371,7 @@ export async function getSubmittedStartups(directoryId: string) {
             contactEmail: true,
             linkedinUrl: true,
             amountRaised: true,
+            currency: true,
             directory: {
                 select: {
                     id: true,
@@ -554,6 +560,7 @@ export async function getVisibleStartupsBySlug(directorySlug: string) {
             contactEmail: true,
             linkedinUrl: true,
             amountRaised: true,
+            currency: true,
             directory: {
                 select: {
                     id: true,
@@ -609,6 +616,7 @@ export async function getSubmittedStartupsBySlug(directorySlug: string) {
             contactEmail: true,
             linkedinUrl: true,
             amountRaised: true,
+            currency: true,
             directory: {
                 select: {
                     id: true,

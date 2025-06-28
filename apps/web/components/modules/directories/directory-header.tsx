@@ -38,7 +38,7 @@ export function DirectoryHeader({ directory }: DirectoryHeaderProps) {
     if (!directory) {
         return (
             <div className='flex items-center justify-between px-7'>
-                <h1 className="font-brand text-3xl">Directory non trovata</h1>
+                <h1 className="font-brand text-3xl">Directory not found</h1>
                 <NavMobile />
             </div>
         )

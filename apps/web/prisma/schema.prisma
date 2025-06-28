@@ -19,59 +19,60 @@ model Directory {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   userId        String
-  startups      Startup[]
   featured      Boolean   @default(false)
-  visible       Boolean   @default(false)
+  featuredOrder Int?
+  latitude      Float?
   location      String?
   longitude     Float?
-  latitude      Float?
-  featuredOrder Int?
+  visible       Boolean   @default(false)
+  startups      Startup[]
 
   @@map("Directory")
 }
 
 model TeamSize {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  minSize     Int
-  maxSize     Int?
-  startups    Startup[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String    @id @default(uuid())
+  name      String    @unique
+  minSize   Int
+  maxSize   Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  startups  Startup[]
 }
 
 model FundingStage {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  order       Int
-  startups    Startup[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String    @id @default(uuid())
+  name      String    @unique
+  order     Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  startups  Startup[]
 }
 
 model Startup {
-  id            String        @id @default(uuid())
-  name          String
-  description   String
-  websiteUrl    String?
-  logoUrl       String?
-  slug          String        @unique
-  foundedAt     DateTime?
-  location      String
-  longitude     Float
-  latitude      Float
-  amountRaised  Decimal?      @db.Decimal(12, 2)
-  teamSize      TeamSize?     @relation(fields: [teamSizeId], references: [id])
-  teamSizeId    String?
-  fundingStage  FundingStage? @relation(fields: [fundingStageId], references: [id])
+  id             String        @id @default(uuid())
+  name           String
+  description    String
+  websiteUrl     String?
+  logoUrl        String?
+  slug           String        @unique
+  foundedAt      DateTime?
+  location       String
+  teamSizeId     String?
   fundingStageId String?
-  contactEmail  String?
-  linkedinUrl   String?
-  metadata      Json?
-  tags          String[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  directory     Directory     @relation(fields: [directoryId], references: [id])
-  directoryId   String
-  visible       Boolean   @default(false)
+  contactEmail   String?
+  linkedinUrl    String?
+  metadata       Json?
+  tags           String[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  directoryId    String
+  latitude       Float
+  longitude      Float
+  visible        Boolean       @default(false)
+  amountRaised   Decimal?      @db.Decimal(12, 2)
+  currency       String?
+  directory      Directory     @relation(fields: [directoryId], references: [id])
+  fundingStage   FundingStage? @relation(fields: [fundingStageId], references: [id])
+  teamSize       TeamSize?     @relation(fields: [teamSizeId], references: [id])
 }

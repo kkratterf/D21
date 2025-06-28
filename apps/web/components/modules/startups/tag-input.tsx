@@ -147,7 +147,7 @@ export function TagInput({ form, directoryId }: TagInputProps) {
                 name="tags"
                 render={({ field }) => (
                     <FormItem className="w-full">
-                        <FormLabel>Tags *</FormLabel>
+                        <FormLabel>Tags <span className='text-description'>*</span></FormLabel>
                         <FormControl>
                             <div className="flex flex-col gap-2">
                                 <Popover open={open} onOpenChange={setOpen}>
@@ -169,12 +169,12 @@ export function TagInput({ form, directoryId }: TagInputProps) {
                                                         <Tag
                                                             key={tag}
                                                             variant="neutral"
-                                                            className='flex items-center gap-0.5 bg-background border-border rounded-full text-description'
+                                                            className='flex items-center gap-0.5 rounded-full border-border bg-background text-description'
                                                         >
                                                             {tag}
                                                             <div
                                                                 aria-label={`Remove ${tag} tag`}
-                                                                className='flex justify-center items-center bg-transparent hover:bg-transparent p-0 border-0 w-4 h-4 cursor-pointer'
+                                                                className='flex h-4 w-4 cursor-pointer items-center justify-center border-0 bg-transparent p-0 hover:bg-transparent'
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleTagRemove(tag);
@@ -196,7 +196,7 @@ export function TagInput({ form, directoryId }: TagInputProps) {
                                             )}
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className='p-0 w-[--radix-popover-trigger-width]'>
+                                    <PopoverContent className='w-[--radix-popover-trigger-width] p-0'>
                                         <Command>
                                             <CommandInput
                                                 placeholder="Search tags..."
