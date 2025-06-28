@@ -11,7 +11,7 @@ export function useLocationSearch() {
     const [searchResults, setSearchResults] = useState<LocationResult[]>([])
     const [isSearching, setIsSearching] = useState(false)
     const [searchValue, setSearchValue] = useState("")
-    const debounceTimeoutRef = useRef<any>()
+    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     const searchLocation = useCallback(async (query: string) => {
         if (!query.trim()) {

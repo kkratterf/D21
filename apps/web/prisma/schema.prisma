@@ -52,7 +52,8 @@ model FundingStage {
 model Startup {
   id             String        @id @default(uuid())
   name           String
-  description    String
+  shortDescription String
+  longDescription  String?
   websiteUrl     String?
   logoUrl        String?
   slug           String        @unique

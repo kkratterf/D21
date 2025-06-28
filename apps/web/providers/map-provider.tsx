@@ -116,6 +116,23 @@ export default function MapProvider({
     };
   }, [resolvedTheme, mapContainerRef, initialViewState]);
 
+  // Add resize observer to handle sidebar collapse/expand
+  useEffect(() => {
+    if (!globalMap || !mapContainerRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (globalMap) {
+        globalMap.resize();
+      }
+    });
+
+    resizeObserver.observe(mapContainerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [mapContainerRef]);
+
   // Show loading until map is completely ready
   if (!globalMap || !isReady || !resolvedTheme) {
     return (

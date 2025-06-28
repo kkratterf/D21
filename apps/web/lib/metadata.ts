@@ -74,20 +74,22 @@ export const directoryMetadata = (directory: Directory): Metadata => ({
   },
 });
 
-type StartupWithNumberAmount = Omit<Startup, 'amountRaised'> & {
+type StartupWithNumberAmount = Omit<Startup, 'amountRaised' | 'description'> & {
   amountRaised: number | null;
+  shortDescription: string;
+  longDescription: string | null;
   directory: Directory;
 };
 
 export const startupMetadata = (startup: StartupWithNumberAmount): Metadata => ({
   title: `D21 - ${startup.name}`,
-  description: startup.description === null ? undefined : startup.description,
+  description: startup.shortDescription === null ? undefined : startup.shortDescription,
   alternates: {
     canonical: `https://www.d21.so/${startup.directory.slug}/${startup.id}`,
   },
   openGraph: {
     title: `D21 - ${startup.name}`,
-    description: startup.description === null ? undefined : startup.description,
+    description: startup.shortDescription === null ? undefined : startup.shortDescription,
     url: `https://www.d21.so/${startup.directory.slug}/${startup.id}`,
     type: 'website',
     locale: 'en',
@@ -110,7 +112,7 @@ export const startupMetadata = (startup: StartupWithNumberAmount): Metadata => (
   twitter: {
     card: 'summary_large_image',
     title: startup.name,
-    description: startup.description || undefined,
+    description: startup.shortDescription || undefined,
     images: startup.logoUrl ? [startup.logoUrl] : undefined,
   },
 });

@@ -1,9 +1,11 @@
 import { getStartupById } from '@/actions/startup'
-import LeftPanel from '@/components/modules/startup-detail/left-panel'
-import RightPanel from '@/components/modules/startup-detail/right-panel'
+import { LeftPanelSkeleton } from '@/components/modules/startup-detail/left-panel-skeleton'
+import { RightPanelSkeleton } from '@/components/modules/startup-detail/right-panel-skeleton'
+import { StartupDetailWrapper } from '@/components/modules/startup-detail/startup-detail-wrapper'
 import Empty from '@/components/ui/empty'
 import { emptyMetadata, startupMetadata } from '@/lib/metadata'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 interface SlugPageProps {
     params: Promise<{
@@ -29,6 +31,7 @@ export async function generateMetadata(
 export default async function SlugPage({ params }: SlugPageProps) {
     const { id } = await params;
 
+    // Verifica che la startup esista per mostrare Empty se necessario
     const startup = await getStartupById(id);
 
     if (!startup) {
@@ -36,9 +39,13 @@ export default async function SlugPage({ params }: SlugPageProps) {
     }
 
     return (
-        <div className='relative flex min-h-dvh w-full flex-col gap-4 p-6 pb-0 lg:flex-row'>
-            <LeftPanel startup={startup} />
-            <RightPanel startup={startup} />
-        </div>
+        <Suspense fallback={
+            <div className='relative flex lg:flex-row flex-col gap-4 p-6 pb-0 w-full min-h-dvh'>
+                <LeftPanelSkeleton />
+                <RightPanelSkeleton />
+            </div>
+        }>
+            <StartupDetailWrapper id={id} />
+        </Suspense>
     )
 }

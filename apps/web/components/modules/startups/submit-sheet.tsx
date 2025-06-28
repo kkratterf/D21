@@ -24,7 +24,8 @@ import { TagInput } from './tag-input';
 
 const startupFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
-    description: z.string().min(10, 'Description must be at least 10 characters'),
+    shortDescription: z.string().min(10, 'Short description must be at least 10 characters'),
+    longDescription: z.string().min(10, 'Long description must be at least 10 characters'),
     websiteUrl: z.string().url('Please enter a valid URL'),
     logoUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
     foundedAt: z.string().min(1, 'Founded date is required'),
@@ -58,7 +59,8 @@ export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: Subm
         resolver: zodResolver(startupFormSchema),
         defaultValues: {
             name: '',
-            description: '',
+            shortDescription: '',
+            longDescription: '',
             websiteUrl: '',
             logoUrl: '',
             foundedAt: '',
@@ -103,7 +105,8 @@ export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: Subm
             const formData = new FormData();
             formData.append('directoryId', directorySlug);
             formData.append('name', data.name);
-            formData.append('description', data.description);
+            formData.append('shortDescription', data.shortDescription);
+            if (data.longDescription) formData.append('longDescription', data.longDescription);
             formData.append('websiteUrl', data.websiteUrl);
             if (data.logoUrl) formData.append('logoUrl', data.logoUrl);
             if (data.foundedAt) formData.append('foundedAt', data.foundedAt);
@@ -173,13 +176,29 @@ export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: Subm
 
                             <FormField
                                 control={form.control}
-                                name="description"
+                                name="shortDescription"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Description <span className='text-description'>*</span></FormLabel>
+                                        <FormLabel>Short Description <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
                                             <Textarea
-                                                placeholder="We are a startup that..."
+                                                placeholder="Your startup in a nutshell..."
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="longDescription"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Long Description <span className='text-description'>*</span></FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Now tell us the real story..."
                                                 {...field}
                                             />
                                         </FormControl>

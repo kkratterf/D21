@@ -6,7 +6,7 @@ import { Button } from '@d21/design-system/components/ui/button'
 import { toast } from '@d21/design-system/components/ui/toast'
 import { Tooltip } from '@d21/design-system/components/ui/tooltip'
 import { useIsMobile } from '@d21/design-system/hooks/useMobile'
-import { Globe, Share2 } from 'lucide-react'
+import { CheckIcon, Globe, LinkIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -23,13 +23,16 @@ interface DirectoryHeaderProps {
 
 export function DirectoryHeader({ directory }: DirectoryHeaderProps) {
     const [isSubmitSheetOpen, setIsSubmitSheetOpen] = useState(false)
+    const [copied, setCopied] = useState(false)
     const isMobile = useIsMobile()
 
     const handleShare = async () => {
         try {
             const currentUrl = window.location.href
             await navigator.clipboard.writeText(currentUrl)
-            toast('📣 URL copied to clipboard! Ready to share')
+            setCopied(true)
+            toast('📣 Copied to clipboard! Ready to share')
+            setTimeout(() => setCopied(false), 5000)
         } catch (error) {
             toast.error('Failed to copy URL')
         }
@@ -49,7 +52,7 @@ export function DirectoryHeader({ directory }: DirectoryHeaderProps) {
             <div className='flex w-full flex-col items-center gap-3'>
                 <div className='flex w-full items-center gap-3'>
                     {directory.imageUrl && (
-                        <Avatar className='size-9 rounded-lg'>
+                        <Avatar className='size-9 rounded-lg border border-default'>
                             <AvatarImage src={directory.imageUrl} />
                             <AvatarFallback>
                                 {directory.name.charAt(0)}
@@ -64,13 +67,13 @@ export function DirectoryHeader({ directory }: DirectoryHeaderProps) {
                 )}
             </div>
             <div className="flex items-center gap-2">
-                <Tooltip content="Share directory">
+                <Tooltip content={copied ? "Url copied" : "Copy url"}>
                     <Button
                         variant="secondary"
                         onClick={handleShare}
                         icon
                     >
-                        <Share2 />
+                        {copied ? <CheckIcon /> : <LinkIcon />}
                     </Button>
                 </Tooltip>
                 <Tooltip content="Map view">

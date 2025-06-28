@@ -10,8 +10,10 @@ import { Skeleton } from '@d21/design-system/components/ui/skeleton';
 import { Tag } from '@d21/design-system/components/ui/tag';
 import { cn, focusRing } from '@d21/design-system/lib/utils';
 
-interface StartupWithRelations extends Omit<Startup, 'amountRaised'> {
+interface StartupWithRelations extends Omit<Startup, 'amountRaised' | 'description'> {
     amountRaised: number | null;
+    shortDescription: string;
+    longDescription: string | null;
     teamSize: TeamSize | null;
     fundingStage: FundingStage | null;
     directory: {
@@ -56,7 +58,7 @@ const StartupCard = ({
                 <div className='flex w-full flex-row items-center gap-2'>
                     <p className='whitespace-nowrap font-semibold text-base'>{item.name}</p>
                     <p className='line-clamp-1 text-description text-sm'>
-                        {item.description}
+                        {item.shortDescription}
                     </p>
                 </div>
                 <div className='flex items-center gap-2'>

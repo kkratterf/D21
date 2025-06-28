@@ -1,9 +1,12 @@
 import type { FundingStage, Startup, TeamSize } from '@prisma/client';
 
+import ShareButtons from '@/components/ui/share-buttons';
 import { Card } from "@d21/design-system/components/ui/card";
 
-interface StartupWithRelations extends Omit<Startup, 'amountRaised'> {
+interface StartupWithRelations extends Omit<Startup, 'amountRaised' | 'description'> {
     amountRaised: number | null;
+    shortDescription: string;
+    longDescription: string | null;
     teamSize: TeamSize | null;
     fundingStage: FundingStage | null;
     directory: {
@@ -31,13 +34,15 @@ const RightPanel = ({ startup }: RightProps) => {
                         )}
                     </div>
                     <div className='flex flex-row items-center justify-between'>
-                        <p className="font-mono text-description">Location</p>
-                        <p className="font-mono">{startup.location}</p>
-                    </div>
-                    <div className='flex flex-row items-center justify-between'>
                         <p className="font-mono text-description">Foundation date</p>
                         <p className="font-mono">{startup.foundedAt ? startup.foundedAt.getFullYear() : 'Unknown'}</p>
                     </div>
+                    {startup.contactEmail && (
+                        <div className='flex flex-row items-center justify-between'>
+                            <p className="font-mono text-description">Contact email</p>
+                            <p className="font-mono">{startup.contactEmail}</p>
+                        </div>
+                    )}
                 </Card>
                 <Card className='flex flex-col gap-4 xl:flex-row'>
                     <div className='flex w-full flex-col gap-1'>
@@ -52,7 +57,7 @@ const RightPanel = ({ startup }: RightProps) => {
                         <p className="font-mono text-description">Amount raised</p>
                         {startup.amountRaised !== null && startup.amountRaised !== undefined ? (
                             <p className="text-heading-body">
-                                {startup.amountRaised.toLocaleString('it-IT')} €
+                                {startup.amountRaised.toLocaleString('it-IT')} {startup.currency}
                             </p>
                         ) : (
                             <p className="text-heading-body">Unknown</p>
@@ -61,10 +66,7 @@ const RightPanel = ({ startup }: RightProps) => {
                 </Card>
                 <div className='flex w-full flex-row items-center justify-between px-6 py-3 pb-12'>
                     <p className="font-mono text-description text-sm">Share</p>
-                    <div className="flex gap-2">
-                        {/* Share buttons placeholder */}
-                        <span className="text-description text-sm">Share functionality</span>
-                    </div>
+                    <ShareButtons />
                 </div>
             </div>
         </div>

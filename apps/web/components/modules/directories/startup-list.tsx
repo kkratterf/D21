@@ -2,8 +2,10 @@ import Empty from '@/components/ui/empty'
 import StartupCard from '@/components/ui/startup-card'
 import type { FundingStage, Startup, TeamSize } from '@prisma/client'
 
-interface StartupWithRelations extends Omit<Startup, 'amountRaised'> {
+interface StartupWithRelations extends Omit<Startup, 'amountRaised' | 'description'> {
     amountRaised: number | null;
+    shortDescription: string;
+    longDescription: string | null;
     teamSize: TeamSize | null;
     fundingStage: FundingStage | null;
     directory: {

@@ -22,7 +22,8 @@ import { TagInput } from './tag-input';
 
 const startupFormSchema = z.object({
     name: z.string().min(1, 'Il nome è obbligatorio'),
-    description: z.string().min(10, 'La descrizione deve essere di almeno 10 caratteri'),
+    shortDescription: z.string().min(10, 'La descrizione breve deve essere di almeno 10 caratteri'),
+    longDescription: z.string().optional().or(z.literal('')),
     websiteUrl: z.string().url('Inserisci un URL valido'),
     logoUrl: z.string().url('Inserisci un URL valido').optional().or(z.literal('')),
     foundedAt: z.string().optional(),
@@ -46,7 +47,8 @@ interface EditStartupSheetProps {
     startup: {
         id: string;
         name: string;
-        description: string;
+        shortDescription: string;
+        longDescription?: string | null;
         websiteUrl: string | null;
         logoUrl?: string | null;
         foundedAt?: Date | null;
@@ -72,7 +74,8 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
         resolver: zodResolver(startupFormSchema),
         defaultValues: {
             name: startup.name,
-            description: startup.description,
+            shortDescription: startup.shortDescription,
+            longDescription: startup.longDescription || '',
             websiteUrl: startup.websiteUrl || '',
             logoUrl: startup.logoUrl || '',
             foundedAt: startup.foundedAt ? startup.foundedAt.toISOString().split('T')[0] : '',
@@ -115,7 +118,8 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
     useEffect(() => {
         form.reset({
             name: startup.name,
-            description: startup.description,
+            shortDescription: startup.shortDescription,
+            longDescription: startup.longDescription || '',
             websiteUrl: startup.websiteUrl || '',
             logoUrl: startup.logoUrl || '',
             foundedAt: startup.foundedAt ? startup.foundedAt.toISOString().split('T')[0] : '',
@@ -138,7 +142,8 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             formData.append('startupId', startup.id);
             formData.append('directoryId', directorySlug);
             formData.append('name', data.name);
-            formData.append('description', data.description);
+            formData.append('shortDescription', data.shortDescription);
+            if (data.longDescription) formData.append('longDescription', data.longDescription);
             formData.append('websiteUrl', data.websiteUrl);
             if (data.logoUrl) formData.append('logoUrl', data.logoUrl);
             if (data.foundedAt) formData.append('foundedAt', data.foundedAt);
@@ -211,10 +216,27 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
 
                             <FormField
                                 control={form.control}
-                                name="description"
+                                name="shortDescription"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Descrizione *</FormLabel>
+                                        <FormLabel>Descrizione Breve *</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Descrivi la tua startup in dettaglio"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="longDescription"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Descrizione Estesa</FormLabel>
                                         <FormControl>
                                             <Textarea
                                                 placeholder="Descrivi la tua startup in dettaglio"
@@ -254,7 +276,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                                 )}
                             />
 
-                            <div className='gap-4 grid grid-cols-2'>
+                            <div className='grid grid-cols-2 gap-4'>
                                 <FormField
                                     control={form.control}
                                     name="foundedAt"
@@ -272,7 +294,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                                 <LocationSearch form={form} />
                             </div>
 
-                            <div className='gap-4 grid grid-cols-2'>
+                            <div className='grid grid-cols-2 gap-4'>
                                 <FormField
                                     control={form.control}
                                     name="teamSizeId"

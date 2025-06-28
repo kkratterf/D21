@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 interface Startup {
     id: string;
     name: string;
-    description?: string;
+    shortDescription?: string;
+    longDescription?: string | null;
     latitude: number;
     longitude: number;
     logo?: string;
@@ -46,7 +47,8 @@ export function useStartups(directorySlug = "C14") {
                 const mappedStartups: Startup[] = realStartups.map(startup => ({
                     id: startup.id,
                     name: startup.name,
-                    description: startup.description,
+                    shortDescription: startup.shortDescription,
+                    longDescription: startup.longDescription,
                     latitude: startup.latitude,
                     longitude: startup.longitude,
                     logo: startup.logoUrl || undefined,

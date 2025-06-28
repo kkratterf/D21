@@ -137,7 +137,8 @@ export async function createStartupAction(formData: FormData) {
     }
 
     const name = formData.get('name') as string
-    const description = formData.get('description') as string
+    const shortDescription = formData.get('shortDescription') as string
+    const longDescription = formData.get('longDescription') ? (formData.get('longDescription') as string) : null
     const websiteUrl = formData.get('websiteUrl') as string
     const logoUrl = formData.get('logoUrl') ? (formData.get('logoUrl') as string) : null
     const foundedAt = formData.get('foundedAt') ? new Date(formData.get('foundedAt') as string) : null
@@ -157,7 +158,8 @@ export async function createStartupAction(formData: FormData) {
     await prisma.startup.create({
         data: {
             name,
-            description,
+            shortDescription,
+            longDescription,
             websiteUrl,
             logoUrl,
             slug,
@@ -204,7 +206,8 @@ export async function updateStartupAction(formData: FormData) {
     }
 
     const name = formData.get('name') as string
-    const description = formData.get('description') as string
+    const shortDescription = formData.get('shortDescription') as string
+    const longDescription = formData.get('longDescription') ? (formData.get('longDescription') as string) : null
     const websiteUrl = formData.get('websiteUrl') as string
     const logoUrl = formData.get('logoUrl') ? (formData.get('logoUrl') as string) : null
     const foundedAt = formData.get('foundedAt') ? new Date(formData.get('foundedAt') as string) : null
@@ -225,7 +228,8 @@ export async function updateStartupAction(formData: FormData) {
         where: { id: startupId },
         data: {
             name,
-            description,
+            shortDescription,
+            longDescription,
             websiteUrl,
             logoUrl,
             slug,
@@ -303,7 +307,8 @@ export async function getVisibleStartups(directoryId?: string) {
         select: {
             id: true,
             name: true,
-            description: true,
+            shortDescription: true,
+            longDescription: true,
             slug: true,
             tags: true,
             createdAt: true,
@@ -350,7 +355,8 @@ export async function getSubmittedStartups(directoryId: string) {
         select: {
             id: true,
             name: true,
-            description: true,
+            shortDescription: true,
+            longDescription: true,
             slug: true,
             tags: true,
             createdAt: true,
@@ -449,6 +455,8 @@ export async function getStartupById(id: string) {
 
     return {
         ...startup,
+        shortDescription: startup.shortDescription,
+        longDescription: startup.longDescription,
         amountRaised: startup.amountRaised ? Number(startup.amountRaised) : null
     }
 }
@@ -539,7 +547,8 @@ export async function getVisibleStartupsBySlug(directorySlug: string) {
         select: {
             id: true,
             name: true,
-            description: true,
+            shortDescription: true,
+            longDescription: true,
             slug: true,
             tags: true,
             createdAt: true,
@@ -595,7 +604,8 @@ export async function getSubmittedStartupsBySlug(directorySlug: string) {
         select: {
             id: true,
             name: true,
-            description: true,
+            shortDescription: true,
+            longDescription: true,
             slug: true,
             tags: true,
             createdAt: true,
