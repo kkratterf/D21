@@ -32,7 +32,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
     const startup = await getStartupById(id);
 
     if (!startup) {
-        return <Empty description="Something went wrong. But hey, don't give up! Try again later." />;
+        return <Empty title="Startup not found" description="The startup you are looking for does not exist." />;
     }
 
     return (

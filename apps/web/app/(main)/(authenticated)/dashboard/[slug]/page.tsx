@@ -100,7 +100,7 @@ async function StartupList({ slug, searchParams }: { slug: string; searchParams:
         return (
             <>
                 <div className='flex flex-col gap-1 px-3 py-4 w-full h-full'>
-                    <Empty description="Non ci sono startup che corrispondono ai filtri selezionati." />
+                    <Empty title="No startups found" description="No startups found matching the selected filters." />
                 </div>
                 <StartupPagination
                     currentPage={page}
@@ -179,13 +179,13 @@ export default async function AdminDirectoryPage({ params, searchParams }: Admin
     // Verifica che l'utente abbia accesso alla directory
     const hasAccess = await checkDirectoryAccess(slug, user.id);
     if (!hasAccess) {
-        return <Empty description="Non hai accesso a questa directory." />;
+        return <Empty title="No access" description="You don’t have access to this directory." />;
     }
 
     // Verifica che la directory esista
     const directory = await getDirectoryBySlugForAdmin(slug);
     if (!directory) {
-        return <Empty description="Directory non trovata." />;
+        return <Empty title="Directory not found" description="The directory you are looking for does not exist." />;
     }
 
     return (
