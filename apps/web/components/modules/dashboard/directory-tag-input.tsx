@@ -26,7 +26,7 @@ import type { useForm } from "react-hook-form"
 import { getUserDirectoryTags } from "@/actions/directory"
 
 interface DirectoryTagInputProps {
-    form: ReturnType<typeof useForm<any>>
+    form: ReturnType<typeof useForm<{ tags: string[] }>>
 }
 
 export function DirectoryTagInput({ form }: DirectoryTagInputProps) {

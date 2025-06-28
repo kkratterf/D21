@@ -533,3 +533,63 @@ export async function toggleDirectoryVisibility(directoryId: string) {
         }
     }
 }
+
+export async function deleteDirectory(directoryId: string) {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            return { success: false, message: 'Not authenticated' }
+        }
+
+        // Get the directory to check access
+        const directory = await prisma.directory.findUnique({
+            where: { id: directoryId },
+            include: {
+                _count: {
+                    select: {
+                        startups: true
+                    }
+                }
+            }
+        })
+
+        if (!directory) {
+            return { success: false, message: 'Directory not found' }
+        }
+
+        // Check if user has access to the directory (is the owner/admin)
+        if (directory.userId !== user.id) {
+            return { success: false, message: 'You do not have access to this directory' }
+        }
+
+        // Delete the directory and all its startups in a transaction
+        await prisma.$transaction(async (tx) => {
+            // First delete all startups in the directory
+            await tx.startup.deleteMany({
+                where: { directoryId: directoryId }
+            })
+
+            // Then delete the directory
+            await tx.directory.delete({
+                where: { id: directoryId }
+            })
+        })
+
+        // Revalidate the dashboard page to update the UI
+        revalidatePath('/dashboard')
+        revalidatePath('/')
+
+        return {
+            success: true,
+            message: '🗑️ Directory deleted successfully',
+            directoryId: directory.id
+        }
+    } catch (error) {
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : 'An unexpected error occurred'
+        }
+    }
+}

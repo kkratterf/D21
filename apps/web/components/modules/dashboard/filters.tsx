@@ -1,6 +1,5 @@
 'use client';
 
-import { Plus, Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useOptimistic, useState, useTransition } from 'react';
 
@@ -9,6 +8,7 @@ import { Input } from '@d21/design-system/components/ui/input';
 
 import { parseDashboardSearchParams, stringifyDashboardSearchParams } from '@/lib/utils';
 import type { DashboardSearchParams } from '@/lib/utils';
+import { Plus } from 'lucide-react';
 import { CreateDirectorySheet } from './create-directory-sheet';
 
 const DashboardFilters = () => {
@@ -44,22 +44,30 @@ const DashboardFilters = () => {
     };
 
     return (
-        <div className='flex items-center gap-2 w-full'>
+        <div className='flex w-full items-center gap-2'>
             <div className='relative flex-1'>
-                <Search className='top-1/2 left-3 absolute w-4 h-4 text-description -translate-y-1/2' />
                 <Input
-                    placeholder="Cerca le tue directories..."
-                    className='pl-9'
+                    placeholder="Search your directories..."
                     value={optimisticFilters.name ?? ""}
                     onChange={(e) => handleFilterChange(e.target.value)}
+                    className='w-full md:max-w-64 xl:max-w-72'
                 />
             </div>
             <Button
                 onClick={() => setIsCreateSheetOpen(true)}
-                className="flex items-center gap-2"
+                className='flex items-center gap-2 sm:hidden'
+                variant="secondary"
+                icon
             >
-                <Plus className='w-4 h-4' />
-                Nuova Directory
+                <Plus />
+            </Button>
+            <Button
+                onClick={() => setIsCreateSheetOpen(true)}
+                className='hidden items-center gap-2 sm:flex'
+                variant="secondary"
+
+            >
+                Create directory
             </Button>
             <CreateDirectorySheet
                 isOpen={isCreateSheetOpen}

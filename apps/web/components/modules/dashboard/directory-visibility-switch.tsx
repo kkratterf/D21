@@ -3,6 +3,7 @@
 import { toggleDirectoryVisibility } from '@/actions/directory';
 import { Switch } from '@d21/design-system/components/ui/switch';
 import { toast } from '@d21/design-system/components/ui/toast';
+import { Tooltip } from '@d21/design-system/components/ui/tooltip';
 import { useState, useTransition } from 'react';
 
 interface DirectoryVisibilitySwitchProps {
@@ -14,11 +15,6 @@ export function DirectoryVisibilitySwitch({ directoryId, isVisible }: DirectoryV
     const [isPending, startTransition] = useTransition();
     const [optimisticVisible, setOptimisticVisible] = useState(isVisible);
 
-    // Aggiorna lo stato quando cambia la prop
-    if (optimisticVisible !== isVisible) {
-        setOptimisticVisible(isVisible);
-    }
-
     const handleToggle = () => {
         // Aggiorna immediatamente l'UI
         setOptimisticVisible(!optimisticVisible);
@@ -26,7 +22,7 @@ export function DirectoryVisibilitySwitch({ directoryId, isVisible }: DirectoryV
         startTransition(async () => {
             const result = await toggleDirectoryVisibility(directoryId);
             if (result.success && result.visible !== undefined) {
-                toast.success(result.message);
+                toast(result.message);
             } else {
                 // Se l'operazione fallisce, ripristina lo stato precedente
                 setOptimisticVisible(isVisible);
@@ -36,11 +32,15 @@ export function DirectoryVisibilitySwitch({ directoryId, isVisible }: DirectoryV
     };
 
     return (
-        <Switch
-            checked={optimisticVisible}
-            onCheckedChange={handleToggle}
-            disabled={isPending}
-            aria-label={`Rendi ${optimisticVisible ? 'invisibile' : 'visibile'} la directory`}
-        />
+        <Tooltip content={optimisticVisible ? 'Hide directory' : 'Show directory'}>
+            <div className='h-5'>
+                <Switch
+                    checked={optimisticVisible}
+                    className='rounded-full'
+                    onCheckedChange={handleToggle}
+                    aria-label={`Make directory ${optimisticVisible ? 'invisible' : 'visible'}`}
+                />
+            </div>
+        </Tooltip>
     );
 } 
