@@ -2,6 +2,7 @@
 
 import type { Directory } from '@prisma/client';
 import Link from 'next/link';
+import type React from 'react';
 import { useState } from 'react';
 
 import {
@@ -13,7 +14,7 @@ import { Button } from '@d21/design-system/components/ui/button';
 import { Skeleton } from '@d21/design-system/components/ui/skeleton';
 import { Tag } from '@d21/design-system/components/ui/tag';
 import { cn, focusRing } from '@d21/design-system/lib/utils';
-import { CheckIcon, LinkIcon, MoreHorizontal } from 'lucide-react';
+import { CheckIcon, ExternalLink, LinkIcon, MoreHorizontal } from 'lucide-react';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@d21/design-system/components/ui/dropdown-menu';
 import { toast } from '@d21/design-system/components/ui/toast';
@@ -38,7 +39,7 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
     const copyToClipboard = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        const directoryUrl = `https://www.d21.so/${item.slug}`;
+        const directoryUrl = `https://www.d21.so/s/${item.slug}`;
         await navigator.clipboard.writeText(directoryUrl);
         setCopied(true);
         toast("📣 Copied to clipboard. Ready to share!");
@@ -54,9 +55,17 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
             target.closest('[data-radix-dropdown-trigger]') ||
             target.closest('[data-radix-dropdown-item]') ||
             target.closest('[role="menuitem"]') ||
-            target.closest('[data-radix-popper-content-wrapper]');
+            target.closest('[data-radix-popper-content-wrapper]') ||
+            target.closest('[data-radix-sheet-content]') ||
+            target.closest('[data-radix-sheet-overlay]') ||
+            target.closest('[role="dialog"]');
 
         if (isControl) {
+            e.preventDefault();
+            return;
+        }
+
+        if (isEditOpen) {
             e.preventDefault();
             return;
         }
@@ -65,7 +74,7 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
     return (
         <Link
             key={item.id}
-            href={`/dashboard/${item.slug}`}
+            href={isEditOpen ? '#' : `/dashboard/${item.slug}`}
             className={cn('rounded-xl', focusRing)}
             onClick={handleCardClick}
         >
@@ -80,7 +89,7 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                             height={40}
                         />
                         <AvatarFallback>
-                            {item.name.slice(0, 2)}
+                            {item.name.slice(0, 1)}
                         </AvatarFallback>
                     </Avatar>
                     <div className='flex w-full flex-row items-center gap-2'>
@@ -111,21 +120,39 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                         />
                     </div>
                     <div className='flex items-center gap-0' data-control>
-                        <Tooltip content={copied ? "Url copied" : "Copy url"}>
+                        <Tooltip content="Preview">
                             <Button
                                 icon
                                 disabled={!item.visible}
                                 variant="secondary"
                                 size="small"
                                 className='hidden rounded-r-none border-r-0 sm:flex'
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (item.visible) {
+                                        window.open(`/s/${item.slug}`, '_blank');
+                                    }
+                                }}
+                            >
+                                <ExternalLink />
+                            </Button>
+                        </Tooltip>
+                        <Tooltip content={copied ? "Url copied" : "Copy url"}>
+                            <Button
+                                icon
+                                disabled={!item.visible}
+                                variant="secondary"
+                                size="small"
+                                className='hidden rounded-none border-r-0 sm:flex'
                                 onClick={copyToClipboard}
                             >
                                 {copied ? <CheckIcon /> : <LinkIcon />}
                             </Button>
                         </Tooltip>
                         <DropdownMenu>
-                            <DropdownMenuTrigger className={cn("rounded-r-lg", focusRing)}>
-                                <div className='relative flex size-8 cursor-pointer items-center justify-center whitespace-nowrap rounded-r-lg rounded-l-none border border-item bg-item px-2 text-sm shadow-sm transition-all duration-100 ease-in-out hover:bg-item-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:bg-item-active disabled:pointer-events-none disabled:border-disabled disabled:bg-neutral-disabled disabled:text-disabled disabled:shadow-none'>
+                            <DropdownMenuTrigger className={cn('rounded-r-lg rounded-l-lg sm:rounded-l-none', focusRing)}>
+                                <div className='relative flex size-8 cursor-pointer items-center justify-center whitespace-nowrap rounded-r-lg rounded-l-lg border border-item bg-item px-2 text-sm shadow-sm transition-all duration-100 ease-in-out hover:bg-item-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:bg-item-active disabled:pointer-events-none disabled:border-disabled disabled:bg-neutral-disabled disabled:text-disabled disabled:shadow-none sm:rounded-l-none'>
                                     <MoreHorizontal className='h-4 w-4' />
                                 </div>
                             </DropdownMenuTrigger>

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@d21/design-system/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@d21/design-system/components/ui/form';
 import { Input } from '@d21/design-system/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@d21/design-system/components/ui/sheet';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@d21/design-system/components/ui/sheet';
 import { Textarea } from '@d21/design-system/components/ui/textarea';
 import { toast } from '@d21/design-system/components/ui/toast';
 
@@ -14,19 +14,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Separator } from '@d21/design-system/components/ui/separator';
 import { LocationSearch } from '../startups/location-search';
 import { DirectoryTagInput } from './directory-tag-input';
 
 const directoryFormSchema = z.object({
-    name: z.string().min(1, 'Il nome è obbligatorio'),
-    description: z.string().min(10, 'La descrizione deve essere di almeno 10 caratteri'),
-    imageUrl: z.string().url('Inserisci un URL valido').optional().or(z.literal('')),
-    link: z.string().url('Inserisci un URL valido').optional().or(z.literal('')),
-    tags: z.array(z.string()).min(1, 'Inserisci almeno un tag'),
+    name: z.string().min(1, 'Name is required'),
+    description: z.string().min(10, 'Description must be at least 10 characters'),
+    imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+    link: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+    tags: z.array(z.string()).min(1, 'Please enter at least one tag'),
     location: z.string().optional().or(z.literal('')),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
-    slug: z.string().min(1, 'Lo slug è obbligatorio').regex(/^[a-z0-9-]+$/, 'Lo slug può contenere solo lettere minuscole, numeri e trattini'),
+    latitude: z.number().optional().or(z.literal(0)),
+    longitude: z.number().optional().or(z.literal(0)),
+    slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug can only contain lowercase letters, numbers and hyphens'),
 });
 
 type DirectoryFormData = z.infer<typeof directoryFormSchema>;
@@ -48,7 +49,7 @@ interface EditDirectorySheetProps {
     };
 }
 
-// Genera automaticamente lo slug dal nome
+// Generate slug automatically from name
 const generateSlug = (name: string) => {
     return name
         .toLowerCase()
@@ -91,7 +92,7 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
         });
     }, [directory, form]);
 
-    // Aggiorna lo slug quando cambia il nome
+    // Update slug when name changes
     useEffect(() => {
         const subscription = form.watch((value, { name }) => {
             if (name === 'name' && value.name) {
@@ -119,14 +120,10 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
 
             await updateDirectoryAction(formData);
 
-            toast('Directory aggiornata con successo!', {
-                description: 'Le modifiche sono state salvate.',
-            });
+            toast('🎉 Directory updated successfully!');
             onOpenChange(false);
         } catch (error) {
-            toast('Errore durante l\'aggiornamento', {
-                description: 'Si è verificato un errore durante l\'aggiornamento della directory.',
-            });
+            toast.error('Error updating directory');
         } finally {
             setIsSubmitting(false);
         }
@@ -135,24 +132,20 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
     return (
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
             <SheetContent className="w-full sm:max-w-lg">
-                <SheetHeader className="space-y-3">
-                    <SheetTitle className="text-left">Modifica Directory</SheetTitle>
-                    <p className="text-muted-foreground text-sm">
-                        Modifica i dati della directory "{directory.name}".
-                    </p>
-                </SheetHeader>
-
-                <div className="mt-6">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <SheetHeader className="space-y-3">
+                            <SheetTitle className="text-left">Edit directory</SheetTitle>
+                        </SheetHeader>
+                        <div className='space-y-5 py-6'>
                             <FormField
                                 control={form.control}
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Nome Directory *</FormLabel>
+                                        <FormLabel>Name <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Nome della directory" {...field} />
+                                            <Input placeholder="Directory name" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -164,10 +157,10 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
                                 name="description"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Descrizione *</FormLabel>
+                                        <FormLabel>Description <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
                                             <Textarea
-                                                placeholder="Descrivi la tua directory in dettaglio"
+                                                placeholder="Describe your directory in detail"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -181,28 +174,18 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
                                 name="slug"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Slug *</FormLabel>
+                                        <FormLabel>Slug <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="nome-directory" {...field} />
+                                            <Input placeholder="directory-name" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-                            <FormField
-                                control={form.control}
-                                name="imageUrl"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Immagine URL</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="https://example.com/image.png" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <DirectoryTagInput form={form} />
+                            <LocationSearch form={form} />
+                            <Separator />
 
                             <FormField
                                 control={form.control}
@@ -218,30 +201,47 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
                                 )}
                             />
 
-                            <DirectoryTagInput form={form as any} />
-
-                            <LocationSearch form={form as any} />
-
-                            <div className="flex gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() => onOpenChange(false)}
-                                    className="flex-1"
-                                >
-                                    Annulla
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex-1"
-                                >
-                                    {isSubmitting ? 'Salvando...' : 'Salva Modifiche'}
-                                </Button>
-                            </div>
-                        </form>
-                    </Form>
-                </div>
+                            <FormField
+                                control={form.control}
+                                name="imageUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Image URL</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="https://example.com/image.png" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <SheetFooter>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => onOpenChange(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                loadingText='Saving...'
+                                isLoading={isSubmitting}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    const values = form.getValues();
+                                    form.trigger().then((isValid) => {
+                                        if (isValid) {
+                                            onSubmit(values);
+                                        }
+                                    });
+                                }}
+                            >
+                                Save
+                            </Button>
+                        </SheetFooter>
+                    </form>
+                </Form>
             </SheetContent>
         </Sheet>
     );

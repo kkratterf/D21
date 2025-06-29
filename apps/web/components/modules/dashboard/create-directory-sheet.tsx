@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@d21/design-system/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@d21/design-system/components/ui/form';
 import { Input } from '@d21/design-system/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@d21/design-system/components/ui/sheet';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@d21/design-system/components/ui/sheet';
 import { Textarea } from '@d21/design-system/components/ui/textarea';
 import { toast } from '@d21/design-system/components/ui/toast';
 
@@ -14,19 +14,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Separator } from '@d21/design-system/components/ui/separator';
 import { LocationSearch } from '../startups/location-search';
 import { DirectoryTagInput } from './directory-tag-input';
 
 const directoryFormSchema = z.object({
-    name: z.string().min(1, 'Il nome è obbligatorio'),
-    description: z.string().min(10, 'La descrizione deve essere di almeno 10 caratteri'),
-    imageUrl: z.string().url('Inserisci un URL valido').optional().or(z.literal('')),
-    link: z.string().url('Inserisci un URL valido').optional().or(z.literal('')),
-    tags: z.array(z.string()).min(1, 'Inserisci almeno un tag'),
+    name: z.string().min(1, 'Name is required'),
+    description: z.string().min(10, 'Description must be at least 10 characters'),
+    imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+    link: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+    tags: z.array(z.string()).min(1, 'Please enter at least one tag'),
     location: z.string().optional().or(z.literal('')),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
-    slug: z.string().min(1, 'Lo slug è obbligatorio').regex(/^[a-z0-9-]+$/, 'Lo slug può contenere solo lettere minuscole, numeri e trattini'),
+    slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug can only contain lowercase letters, numbers and hyphens'),
 });
 
 type DirectoryFormData = z.infer<typeof directoryFormSchema>;
@@ -36,7 +37,7 @@ interface CreateDirectorySheetProps {
     onOpenChange: (open: boolean) => void;
 }
 
-// Genera automaticamente lo slug dal nome
+// Generate slug automatically from name
 const generateSlug = (name: string) => {
     return name
         .toLowerCase()
@@ -64,7 +65,7 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
         },
     });
 
-    // Aggiorna lo slug quando cambia il nome
+    // Update slug when name changes
     useEffect(() => {
         const subscription = form.watch((value, { name }) => {
             if (name === 'name' && value.name) {
@@ -91,15 +92,11 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
 
             await createDirectoryAction(formData);
 
-            toast('Directory creata con successo!', {
-                description: 'La tua nuova directory è stata creata.',
-            });
+            toast('🎉 Directory created successfully!');
             form.reset();
             onOpenChange(false);
         } catch (error) {
-            toast('Errore durante la creazione', {
-                description: 'Si è verificato un errore durante la creazione della directory.',
-            });
+            toast.error('Error creating directory');
         } finally {
             setIsSubmitting(false);
         }
@@ -108,41 +105,20 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
     return (
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
             <SheetContent className="w-full sm:max-w-lg">
-                <SheetHeader className="space-y-3">
-                    <SheetTitle className="text-left">Crea Nuova Directory</SheetTitle>
-                    <p className="text-muted-foreground text-sm">
-                        Compila il form per creare una nuova directory di startup.
-                    </p>
-                </SheetHeader>
-
-                <div className="mt-6">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <SheetHeader className="space-y-3">
+                            <SheetTitle className="text-left">Create directory</SheetTitle>
+                        </SheetHeader>
+                        <div className='space-y-5 py-6'>
                             <FormField
                                 control={form.control}
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Nome Directory *</FormLabel>
+                                        <FormLabel>Name <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Nome della directory" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Descrizione *</FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                placeholder="Descrivi la tua directory in dettaglio"
-                                                {...field}
-                                            />
+                                            <Input placeholder="Directory name" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -154,9 +130,9 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
                                 name="slug"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Slug *</FormLabel>
+                                        <FormLabel>Slug <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="nome-directory" {...field} />
+                                            <Input placeholder="directory-name" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -165,17 +141,24 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
 
                             <FormField
                                 control={form.control}
-                                name="imageUrl"
+                                name="description"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Immagine URL</FormLabel>
+                                        <FormLabel>Description <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="https://example.com/image.png" {...field} />
+                                            <Textarea
+                                                placeholder="Describe your directory in detail"
+                                                {...field}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+
+                            <DirectoryTagInput form={form} />
+                            <LocationSearch form={form} />
+                            <Separator />
 
                             <FormField
                                 control={form.control}
@@ -191,30 +174,42 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
                                 )}
                             />
 
-                            <DirectoryTagInput form={form} />
+                            <FormField
+                                control={form.control}
+                                name="imageUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Image URL</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="https://example.com/image.png" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                            <LocationSearch form={form} />
 
-                            <div className="flex gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() => onOpenChange(false)}
-                                    className="flex-1"
-                                >
-                                    Annulla
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex-1"
-                                >
-                                    {isSubmitting ? 'Creando...' : 'Crea Directory'}
-                                </Button>
-                            </div>
-                        </form>
-                    </Form>
-                </div>
+
+
+                        </div>
+                        <SheetFooter>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => onOpenChange(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                loadingText='Creating...'
+                                isLoading={isSubmitting}
+                            >
+                                Create
+                            </Button>
+                        </SheetFooter>
+                    </form>
+                </Form>
             </SheetContent>
         </Sheet>
     );

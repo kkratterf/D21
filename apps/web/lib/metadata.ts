@@ -54,12 +54,12 @@ export const directoryMetadata = (directory: Directory): Metadata => ({
   title: `D21 - ${directory.name}`,
   description: directory.description === null ? undefined : directory.description,
   alternates: {
-    canonical: `https://www.d21.so/${directory.slug}`,
+    canonical: `https://www.d21.so/s/${directory.slug}`,
   },
   openGraph: {
     title: `D21 - ${directory.name}`,
     description: directory.description === null ? undefined : directory.description,
-    url: `https://www.d21.so/${directory.slug}`,
+    url: `https://www.d21.so/s/${directory.slug}`,
     type: 'website',
     locale: 'en',
     alternateLocale: 'it',
@@ -85,12 +85,12 @@ export const startupMetadata = (startup: StartupWithNumberAmount): Metadata => (
   title: `D21 - ${startup.name}`,
   description: startup.shortDescription === null ? undefined : startup.shortDescription,
   alternates: {
-    canonical: `https://www.d21.so/${startup.directory.slug}/${startup.id}`,
+    canonical: `https://www.d21.so/s/${startup.directory.slug}/${startup.id}`,
   },
   openGraph: {
     title: `D21 - ${startup.name}`,
     description: startup.shortDescription === null ? undefined : startup.shortDescription,
-    url: `https://www.d21.so/${startup.directory.slug}/${startup.id}`,
+    url: `https://www.d21.so/s/${startup.directory.slug}/${startup.id}`,
     type: 'website',
     locale: 'en',
     alternateLocale: 'it',

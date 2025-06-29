@@ -93,7 +93,7 @@ export function DirectoryTagInput({ form }: DirectoryTagInputProps) {
         if (isLoading) {
             return (
                 <div className="p-4 text-muted-foreground text-sm">
-                    Caricamento tag...
+                    Loading tags...
                 </div>
             )
         }
@@ -165,12 +165,12 @@ export function DirectoryTagInput({ form }: DirectoryTagInputProps) {
                                                         <Tag
                                                             key={tag}
                                                             variant="neutral"
-                                                            className='flex items-center gap-0.5 rounded-full border-border bg-background text-description'
+                                                            className='flex items-center gap-0.5 bg-background border-border rounded-full text-description'
                                                         >
                                                             {tag}
                                                             <div
                                                                 aria-label={`Remove ${tag} tag`}
-                                                                className='flex h-4 w-4 cursor-pointer items-center justify-center border-0 bg-transparent p-0 hover:bg-transparent'
+                                                                className='flex justify-center items-center bg-transparent hover:bg-transparent p-0 border-0 w-4 h-4 cursor-pointer'
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleTagRemove(tag);
@@ -188,14 +188,14 @@ export function DirectoryTagInput({ form }: DirectoryTagInputProps) {
                                                     ))}
                                                 </div>
                                             ) : (
-                                                "Aggiungi tag..."
+                                                "Add tag..."
                                             )}
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className='w-[--radix-popover-trigger-width] p-0'>
+                                    <PopoverContent className='p-0 w-[--radix-popover-trigger-width]'>
                                         <Command>
                                             <CommandInput
-                                                placeholder="Cerca o crea tag..."
+                                                placeholder="Search or create tag..."
                                                 value={searchValue}
                                                 onValueChange={setSearchValue}
                                                 onKeyDown={(e) => {
@@ -215,7 +215,7 @@ export function DirectoryTagInput({ form }: DirectoryTagInputProps) {
                         </FormControl>
                         {currentTags.length > 4 ? (
                             <FormDescription>
-                                Puoi aggiungere fino a 5 tag
+                                You can add up to 2 tags
                             </FormDescription>
                         ) : null}
                         <FormMessage />
