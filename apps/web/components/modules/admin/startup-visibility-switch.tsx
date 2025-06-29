@@ -3,6 +3,7 @@
 import { toggleStartupVisibility } from '@/actions/startup';
 import { Switch } from '@d21/design-system/components/ui/switch';
 import { toast } from '@d21/design-system/components/ui/toast';
+import { Tooltip } from '@d21/design-system/components/ui/tooltip';
 import { useState, useTransition } from 'react';
 
 interface StartupVisibilitySwitchProps {
@@ -14,11 +15,6 @@ export function StartupVisibilitySwitch({ startupId, isVisible }: StartupVisibil
     const [isPending, startTransition] = useTransition();
     const [optimisticVisible, setOptimisticVisible] = useState(isVisible);
 
-    // Aggiorna lo stato quando cambia la prop
-    if (optimisticVisible !== isVisible) {
-        setOptimisticVisible(isVisible);
-    }
-
     const handleToggle = () => {
         // Aggiorna immediatamente l'UI
         setOptimisticVisible(!optimisticVisible);
@@ -26,7 +22,7 @@ export function StartupVisibilitySwitch({ startupId, isVisible }: StartupVisibil
         startTransition(async () => {
             const result = await toggleStartupVisibility(startupId);
             if (result.success && result.visible !== undefined) {
-                toast.success(result.message);
+                toast(result.message);
             } else {
                 // Se l'operazione fallisce, ripristina lo stato precedente
                 setOptimisticVisible(isVisible);
@@ -36,11 +32,15 @@ export function StartupVisibilitySwitch({ startupId, isVisible }: StartupVisibil
     };
 
     return (
-        <Switch
-            checked={optimisticVisible}
-            onCheckedChange={handleToggle}
-            disabled={isPending}
-            aria-label={`Rendi ${optimisticVisible ? 'invisibile' : 'visibile'} la startup`}
-        />
+        <Tooltip content={optimisticVisible ? 'Hide startup' : 'Show startup'}>
+            <div className='h-5'>
+                <Switch
+                    checked={optimisticVisible}
+                    className='rounded-full'
+                    onCheckedChange={handleToggle}
+                    aria-label={`Make startup ${optimisticVisible ? 'invisible' : 'visible'}`}
+                />
+            </div>
+        </Tooltip>
     );
 } 

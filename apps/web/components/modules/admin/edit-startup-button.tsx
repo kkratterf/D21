@@ -21,9 +21,8 @@ export function EditStartupButton({ startup, directorySlug }: EditStartupButtonP
                 variant="secondary"
                 size="small"
                 onClick={() => setIsEditOpen(true)}
-                className='p-0 w-8 h-8'
             >
-                <Edit className='w-3 h-3' />
+                <Edit />
             </Button>
             <EditStartupSheet
                 isOpen={isEditOpen}

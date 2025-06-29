@@ -174,7 +174,7 @@ const StartupsFiltersWithParams = ({
                         />
                     </div>
                     {hasActiveFilters() && (
-                        <Tooltip content="Reset filtri" className='z-50 hidden md:flex 2xl:hidden'>
+                        <Tooltip content="Reset filters" className='z-50 hidden md:flex 2xl:hidden'>
                             <Button
                                 className="w-full md:w-auto"
                                 variant="text"

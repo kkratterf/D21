@@ -119,16 +119,16 @@ const DirectoriesFiltersWithParams = ({
     };
 
     return (
-        <div className='sticky top-0 z-20 border-border border-b bg-background px-6 py-4'>
-            <div className='flex flex-col items-center justify-between gap-2 md:flex-row'>
-                <div className='flex w-full flex-col items-center gap-2 md:flex-row'>
+        <div className='top-0 z-20 sticky bg-background px-6 py-4 border-b border-border'>
+            <div className='flex md:flex-row flex-col justify-between items-center gap-2'>
+                <div className='flex md:flex-row flex-col items-center gap-2 w-full'>
                     <Input
                         placeholder="Search directories..."
                         className='w-full md:max-w-64 xl:max-w-72'
                         value={optimisticFilters.name ?? ""}
                         onChange={(e) => handleFilterChange('name', e.target.value)}
                     />
-                    <div className='flex w-full flex-row gap-2 md:w-auto'>
+                    <div className='flex flex-row gap-2 w-full md:w-auto'>
                         <Filter
                             icon={<Tags />}
                             title="Tags"
@@ -139,7 +139,7 @@ const DirectoriesFiltersWithParams = ({
                         />
                     </div>
                     {hasActiveFilters() && (
-                        <Tooltip content="Reset filtri" className='z-50 hidden md:flex 2xl:hidden'>
+                        <Tooltip content="Reset filters" className='hidden 2xl:hidden z-50 md:flex'>
                             <Button
                                 className='w-full md:w-auto'
                                 variant="text"
@@ -151,8 +151,8 @@ const DirectoriesFiltersWithParams = ({
                                     });
                                 }}
                             >
-                                <X className='hidden md:flex 2xl:hidden' />
-                                <span className='flex md:hidden 2xl:flex'>Reset</span>
+                                <X className='hidden 2xl:hidden md:flex' />
+                                <span className='md:hidden flex 2xl:flex'>Reset</span>
                             </Button>
                         </Tooltip>
                     )}
@@ -181,10 +181,10 @@ export default DirectoryFilters;
 
 export const DirectoryFiltersSkeleton = () => {
     return (
-        <div className='sticky top-0 z-20 border-border border-b bg-background px-6 py-4'>
-            <div className='flex flex-col items-center gap-2 md:flex-row'>
-                <Skeleton className='h-9 md:max-w-64' />
-                <Skeleton className='h-9 w-[38px]' />
+        <div className='top-0 z-20 sticky bg-background px-6 py-4 border-b border-border'>
+            <div className='flex md:flex-row flex-col items-center gap-2'>
+                <Skeleton className='md:max-w-64 h-9' />
+                <Skeleton className='w-[38px] h-9' />
             </div>
         </div>
     );

@@ -179,6 +179,8 @@ export async function createStartupAction(formData: FormData) {
         }
     })
 
+    revalidatePath(`/dashboard/${directory.slug}`)
+
     return { success: true }
 }
 
@@ -246,6 +248,9 @@ export async function updateStartupAction(formData: FormData) {
             currency,
         }
     })
+
+    // Revalidate the dashboard page to update the UI
+    revalidatePath(`/dashboard/${directoryId}`)
 
     return { success: true }
 }
@@ -429,7 +434,7 @@ export async function deleteStartup(startupId: string) {
 
         return {
             success: true,
-            message: 'Startup deleted successfully'
+            message: '🗑️ Startup deleted successfully'
         }
     } catch (error) {
         return {

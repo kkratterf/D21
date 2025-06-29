@@ -1,0 +1,117 @@
+'use client'
+import NavMobile from '@/components/layout/nav-mobile'
+import { SubmitStartupSheet } from '@/components/modules/startups/submit-sheet'
+import { Avatar, AvatarFallback, AvatarImage } from '@d21/design-system/components/ui/avatar'
+import { Button } from '@d21/design-system/components/ui/button'
+import { Tag } from '@d21/design-system/components/ui/tag'
+import { toast } from '@d21/design-system/components/ui/toast'
+import { Tooltip } from '@d21/design-system/components/ui/tooltip'
+import { CheckIcon, Globe, LinkIcon } from 'lucide-react'
+import Link from 'next/link'
+import { useState } from 'react'
+
+interface AdminDirectoryHeaderProps {
+    directory: {
+        id: string
+        name: string
+        description?: string | null
+        slug: string
+        imageUrl?: string | null
+        _count: {
+            startups: number
+        }
+        startups: {
+            id: string
+            visible: boolean
+        }[]
+    } | null
+}
+
+export function AdminDirectoryHeader({ directory }: AdminDirectoryHeaderProps) {
+    const [isSubmitSheetOpen, setIsSubmitSheetOpen] = useState(false)
+    const [copied, setCopied] = useState(false)
+
+    const handleShare = async () => {
+        try {
+            const currentUrl = window.location.href
+            await navigator.clipboard.writeText(currentUrl)
+            setCopied(true)
+            toast('📣 Copied to clipboard! Ready to share')
+            setTimeout(() => setCopied(false), 5000)
+        } catch (error) {
+            toast.error('Failed to copy URL')
+        }
+    }
+
+    // Calcola startup visibili e nascoste
+    const visibleCount = directory?.startups?.filter(s => s.visible).length || 0
+    const hiddenCount = directory?.startups?.filter(s => !s.visible).length || 0
+
+    if (!directory) {
+        return (
+            <div className='flex items-center justify-between px-7'>
+                <h1 className="font-brand text-3xl">Directory not found</h1>
+                <NavMobile />
+            </div>
+        )
+    }
+
+    return (
+        <div className='flex flex-col items-start justify-between gap-4 border-border border-b px-7 pb-6 md:flex-row'>
+            <div className='flex w-full flex-col items-center gap-3'>
+                <div className='flex w-full items-center gap-3'>
+                    {directory.imageUrl && (
+                        <Avatar className='size-9 rounded-lg border border-default'>
+                            <AvatarImage src={directory.imageUrl} />
+                            <AvatarFallback>
+                                {directory.name.charAt(0)}
+                            </AvatarFallback>
+                        </Avatar>
+                    )}
+                    <h1 className="w-full font-brand text-2xl">{directory.name}</h1>
+                    <NavMobile />
+                </div>
+                {directory.description && (
+                    <p className='line-clamp-1 w-full text-description'>{directory.description}</p>
+                )}
+            </div>
+            <div className="flex items-center gap-2">
+                <div className='hidden gap-0.5 md:flex'>
+                    <Tag className='rounded-full border-border bg-background text-description' variant="neutral">
+                        {visibleCount} visible
+                    </Tag>
+                    <Tag className='rounded-full border-border bg-background text-description' variant="neutral">
+                        {hiddenCount} hidden
+                    </Tag>
+                </div>
+                <Tooltip content={copied ? "Url copied" : "Copy url"}>
+                    <Button
+                        variant="secondary"
+                        onClick={handleShare}
+                        icon
+                    >
+                        {copied ? <CheckIcon /> : <LinkIcon />}
+                    </Button>
+                </Tooltip>
+                <Tooltip content="Map view">
+                    <Button variant="secondary" icon asChild>
+                        <Link href={`/${directory.slug}/map`}>
+                            <Globe />
+                        </Link>
+                    </Button>
+                </Tooltip>
+                <Button
+                    variant="primary"
+                    onClick={() => setIsSubmitSheetOpen(true)}
+                >
+                    Submit
+                </Button>
+            </div>
+            <SubmitStartupSheet
+                isOpen={isSubmitSheetOpen}
+                onOpenChange={setIsSubmitSheetOpen}
+                directorySlug={directory.slug}
+            />
+        </div>
+    )
+}

@@ -6,7 +6,7 @@ import { Button } from '@d21/design-system/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@d21/design-system/components/ui/form';
 import { Input } from '@d21/design-system/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@d21/design-system/components/ui/select';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@d21/design-system/components/ui/sheet';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@d21/design-system/components/ui/sheet';
 import { Textarea } from '@d21/design-system/components/ui/textarea';
 import { toast } from '@d21/design-system/components/ui/toast';
 
@@ -17,25 +17,28 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Separator } from '@d21/design-system/components/ui/separator';
+import { Loader2 } from 'lucide-react';
 import { LocationSearch } from './location-search';
 import { TagInput } from './tag-input';
 
 const startupFormSchema = z.object({
-    name: z.string().min(1, 'Il nome è obbligatorio'),
-    shortDescription: z.string().min(10, 'La descrizione breve deve essere di almeno 10 caratteri'),
+    name: z.string().min(1, 'Name is required'),
+    shortDescription: z.string().min(10, 'Short description must be at least 10 characters'),
     longDescription: z.string().optional().or(z.literal('')),
-    websiteUrl: z.string().url('Inserisci un URL valido'),
-    logoUrl: z.string().url('Inserisci un URL valido').optional().or(z.literal('')),
-    foundedAt: z.string().optional(),
-    location: z.string().min(1, 'La location è obbligatoria'),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
-    teamSizeId: z.string().min(1, 'Seleziona la dimensione del team'),
-    fundingStageId: z.string().min(1, 'Seleziona lo stage di funding'),
-    contactEmail: z.string().email('Inserisci un email valida').optional().or(z.literal('')),
-    linkedinUrl: z.string().url('Inserisci un URL valido').optional().or(z.literal('')),
-    tags: z.array(z.string()).min(1, 'Inserisci almeno un tag'),
+    websiteUrl: z.string().url('Please enter a valid URL'),
+    logoUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+    foundedAt: z.string().optional().or(z.literal('')),
+    location: z.string().min(1, 'Location is required'),
+    latitude: z.number().optional().or(z.literal(0)),
+    longitude: z.number().optional().or(z.literal(0)),
+    teamSizeId: z.string().min(1, 'Please select team size'),
+    fundingStageId: z.string().min(1, 'Please select funding stage'),
+    contactEmail: z.string().email('Please enter a valid email').optional().or(z.literal('')),
+    linkedinUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+    tags: z.array(z.string()).min(1, 'Please enter at least one tag'),
     amountRaised: z.string().optional().or(z.literal('')),
+    currency: z.string().optional().or(z.literal('')),
 });
 
 type StartupFormData = z.infer<typeof startupFormSchema>;
@@ -88,6 +91,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             linkedinUrl: startup.linkedinUrl || '',
             tags: startup.tags,
             amountRaised: startup.amountRaised?.toString() || '',
+            currency: '',
         },
     });
 
@@ -101,8 +105,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                 setTeamSizes(teamSizesData);
                 setFundingStages(fundingStagesData);
             } catch (error) {
-                toast('Errore nel caricamento dei dati', {
-                    description: 'Errore nel caricamento dei dati. Riprova.',
+                toast.error('Error loading data', {
                 });
             } finally {
                 setIsLoading(false);
@@ -132,6 +135,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             linkedinUrl: startup.linkedinUrl || '',
             tags: startup.tags,
             amountRaised: startup.amountRaised?.toString() || '',
+            currency: '',
         });
     }, [startup, form]);
 
@@ -156,17 +160,14 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             if (data.linkedinUrl) formData.append('linkedinUrl', data.linkedinUrl);
             formData.append('tags', data.tags.join(','));
             if (data.amountRaised) formData.append('amountRaised', data.amountRaised);
+            if (data.currency) formData.append('currency', data.currency);
 
             await updateStartupAction(formData);
 
-            toast('Startup aggiornata con successo!', {
-                description: 'Le modifiche sono state salvate.',
-            });
+            toast('🎉 Startup updated successfully');
             onOpenChange(false);
         } catch (error) {
-            toast('Errore durante l\'aggiornamento', {
-                description: 'Errore durante l\'aggiornamento della startup. Riprova.',
-            });
+            toast.error('Error updating startup');
         } finally {
             setIsSubmitting(false);
         }
@@ -177,11 +178,11 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             <Sheet open={isOpen} onOpenChange={onOpenChange}>
                 <SheetContent className="w-full sm:max-w-lg">
                     <SheetHeader className="space-y-3">
-                        <SheetTitle className="text-left">Modifica Startup</SheetTitle>
-                        <p className="text-muted-foreground text-sm">
-                            Caricamento...
-                        </p>
+                        <SheetTitle className="text-left">Edit startup</SheetTitle>
                     </SheetHeader>
+                    <div className='flex h-80 w-full items-center justify-center'>
+                        <Loader2 className='size-4 animate-spin stroke-icon' />
+                    </div>
                 </SheetContent>
             </Sheet>
         );
@@ -190,24 +191,20 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
     return (
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
             <SheetContent className="w-full sm:max-w-lg">
-                <SheetHeader className="space-y-3">
-                    <SheetTitle className="text-left">Modifica Startup</SheetTitle>
-                    <p className="text-muted-foreground text-sm">
-                        Modifica i dati della startup "{startup.name}".
-                    </p>
-                </SheetHeader>
-
-                <div className="mt-6">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <Form {...form}>
+                    <form>
+                        <SheetHeader className="space-y-3">
+                            <SheetTitle className="text-left">Edit startup</SheetTitle>
+                        </SheetHeader>
+                        <div className='space-y-5 py-6'>
                             <FormField
                                 control={form.control}
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Nome Startup *</FormLabel>
+                                        <FormLabel>Name <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Nome della startup" {...field} />
+                                            <Input placeholder="Acme Inc." {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -219,10 +216,10 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                                 name="shortDescription"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Descrizione Breve *</FormLabel>
+                                        <FormLabel>Short Description <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
                                             <Textarea
-                                                placeholder="Descrivi la tua startup in dettaglio"
+                                                placeholder="Your startup in a nutshell..."
                                                 {...field}
                                             />
                                         </FormControl>
@@ -230,18 +227,32 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                                     </FormItem>
                                 )}
                             />
-
                             <FormField
                                 control={form.control}
                                 name="longDescription"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Descrizione Estesa</FormLabel>
+                                        <FormLabel>Long Description <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
                                             <Textarea
-                                                placeholder="Descrivi la tua startup in dettaglio"
+                                                placeholder="Now tell us the real story..."
                                                 {...field}
                                             />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <TagInput form={form} directoryId={directorySlug} />
+                            <Separator />
+                            <FormField
+                                control={form.control}
+                                name="websiteUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Website URL <span className='text-description'>*</span></FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="https://acme.com" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -250,12 +261,12 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
 
                             <FormField
                                 control={form.control}
-                                name="websiteUrl"
+                                name="linkedinUrl"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Website *</FormLabel>
+                                        <FormLabel>LinkedIn URL <span className='text-description'>*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="https://example.com" {...field} />
+                                            <Input placeholder="https://linkedin.com/company/acme" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -276,85 +287,56 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                                 )}
                             />
 
-                            <div className='grid grid-cols-2 gap-4'>
-                                <FormField
-                                    control={form.control}
-                                    name="foundedAt"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Data di fondazione</FormLabel>
-                                            <FormControl>
-                                                <Input type="date" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <LocationSearch form={form} />
-                            </div>
-
-                            <div className='grid grid-cols-2 gap-4'>
-                                <FormField
-                                    control={form.control}
-                                    name="teamSizeId"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Dimensione Team *</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Seleziona" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {teamSizes.map((teamSize) => (
-                                                        <SelectItem key={teamSize.id} value={teamSize.id}>
-                                                            {teamSize.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="fundingStageId"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Funding Stage *</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Seleziona" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {fundingStages.map((fundingStage) => (
-                                                        <SelectItem key={fundingStage.id} value={fundingStage.id}>
-                                                            {fundingStage.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
                             <FormField
                                 control={form.control}
                                 name="contactEmail"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email di contatto</FormLabel>
+                                        <FormLabel>Contact Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="contact@startup.com" {...field} />
+                                            <Input placeholder="hello@acme.com" {...field} />
                                         </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Separator />
+                            <FormField
+                                control={form.control}
+                                name="foundedAt"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Founded at <span className='text-description'>*</span></FormLabel>
+                                        <FormControl>
+                                            <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <LocationSearch form={form} />
+                            <Separator />
+
+                            <FormField
+                                control={form.control}
+                                name="teamSizeId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Team Size <span className='text-description'>*</span></FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select team size" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {teamSizes.map((teamSize) => (
+                                                    <SelectItem key={teamSize.id} value={teamSize.id}>
+                                                        {teamSize.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -362,58 +344,100 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
 
                             <FormField
                                 control={form.control}
-                                name="linkedinUrl"
+                                name="fundingStageId"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>LinkedIn URL</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="https://linkedin.com/company/startup" {...field} />
-                                        </FormControl>
+                                        <FormLabel>Funding Stage <span className='text-description'>*</span></FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select funding stage" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {fundingStages.map((fundingStage) => (
+                                                    <SelectItem key={fundingStage.id} value={fundingStage.id}>
+                                                        {fundingStage.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-
-                            <TagInput form={form} directoryId={directorySlug} />
-
-                            <FormField
-                                control={form.control}
-                                name="amountRaised"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Amount Raised (USD)</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="1000000"
-                                                type="number"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <div className="flex gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() => onOpenChange(false)}
-                                    className="flex-1"
-                                >
-                                    Annulla
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex-1"
-                                >
-                                    {isSubmitting ? 'Salvando...' : 'Salva Modifiche'}
-                                </Button>
+                            <div className='flex w-full flex-col gap-3 sm:flex-row'>
+                                <FormField
+                                    control={form.control}
+                                    name="amountRaised"
+                                    render={({ field }) => (
+                                        <FormItem className='w-full'>
+                                            <FormLabel>Amount Raised</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="1000000"
+                                                    type="number"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="currency"
+                                    render={({ field }) => (
+                                        <FormItem className='min-w-40'>
+                                            <FormLabel>Currency</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select currency" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="USD">USD</SelectItem>
+                                                    <SelectItem value="EUR">EUR</SelectItem>
+                                                    <SelectItem value="GBP">GBP</SelectItem>
+                                                    <SelectItem value="JPY">JPY</SelectItem>
+                                                    <SelectItem value="AUD">AUD</SelectItem>
+                                                    <SelectItem value="CAD">CAD</SelectItem>
+                                                    <SelectItem value="CHF">CHF</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
                             </div>
-                        </form>
-                    </Form>
-                </div>
+                        </div>
+                        <SheetFooter>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => onOpenChange(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                loadingText='Wait a sec...'
+                                isLoading={isSubmitting}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    const values = form.getValues();
+                                    form.trigger().then((isValid) => {
+                                        if (isValid) {
+                                            onSubmit(values);
+                                        }
+                                    });
+                                }}
+                            >
+                                Edit
+                            </Button>
+                        </SheetFooter>
+                    </form>
+                </Form>
             </SheetContent>
         </Sheet>
     );
