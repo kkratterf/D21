@@ -61,6 +61,7 @@ const generateSlug = (name: string) => {
 
 export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDirectorySheetProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isProcessingImage, setIsProcessingImage] = useState(false);
 
     const form = useForm<DirectoryFormData>({
         resolver: zodResolver(directoryFormSchema),
@@ -92,25 +93,40 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
         });
     }, [directory, form]);
 
-    // Update slug when name changes
+    // Update slug when name changes, but only if slug is empty or user is creating a new directory
     useEffect(() => {
         const subscription = form.watch((value, { name }) => {
             if (name === 'name' && value.name) {
-                const generatedSlug = generateSlug(value.name);
-                form.setValue('slug', generatedSlug);
+                // Only auto-generate slug if the current slug is empty or matches the old name
+                const currentSlug = form.getValues('slug');
+                const oldNameSlug = generateSlug(directory.name);
+
+                // Only update if slug is empty or matches the old name's slug
+                if (!currentSlug || currentSlug === oldNameSlug) {
+                    const generatedSlug = generateSlug(value.name);
+                    form.setValue('slug', generatedSlug);
+                }
             }
         });
         return () => subscription.unsubscribe();
-    }, [form]);
+    }, [form, directory.name]);
 
     const onSubmit = async (data: DirectoryFormData) => {
         setIsSubmitting(true);
+        setIsProcessingImage(false);
+
         try {
             const formData = new FormData();
             formData.append('directoryId', directory.id);
             formData.append('name', data.name);
             formData.append('description', data.description);
-            if (data.imageUrl) formData.append('imageUrl', data.imageUrl);
+            if (data.imageUrl) {
+                formData.append('imageUrl', data.imageUrl);
+                // Only process if it's not already a Postimages.org URL
+                if (!data.imageUrl.includes('postimg.cc') && !data.imageUrl.includes('postimages.org')) {
+                    setIsProcessingImage(true);
+                }
+            }
             if (data.link) formData.append('link', data.link);
             formData.append('tags', data.tags.join(','));
             if (data.location) formData.append('location', data.location);
@@ -126,6 +142,7 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
             toast.error('Error updating directory');
         } finally {
             setIsSubmitting(false);
+            setIsProcessingImage(false);
         }
     };
 
@@ -178,6 +195,9 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
                                         <FormControl>
                                             <Input placeholder="directory-name" {...field} />
                                         </FormControl>
+                                        <p className="text-muted-foreground text-sm">
+                                            💡 The slug will be auto-generated from the name. You can edit it manually if needed.
+                                        </p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -210,6 +230,9 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
                                         <FormControl>
                                             <Input placeholder="https://example.com/image.png" {...field} />
                                         </FormControl>
+                                        <p className="text-muted-foreground text-sm">
+                                            💡 The image will be automatically uploaded to Postimages.org to ensure permanent availability.
+                                        </p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -225,7 +248,7 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
                             </Button>
                             <Button
                                 type="submit"
-                                loadingText='Saving...'
+                                loadingText='Wait a sec...'
                                 isLoading={isSubmitting}
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -237,7 +260,7 @@ export function EditDirectorySheet({ isOpen, onOpenChange, directory }: EditDire
                                     });
                                 }}
                             >
-                                Save
+                                Edit
                             </Button>
                         </SheetFooter>
                     </form>

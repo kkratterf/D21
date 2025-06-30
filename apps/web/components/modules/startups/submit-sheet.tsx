@@ -51,6 +51,7 @@ interface SubmitStartupSheetProps {
 
 export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: SubmitStartupSheetProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isProcessingLogo, setIsProcessingLogo] = useState(false);
     const [teamSizes, setTeamSizes] = useState<Array<{ id: string; name: string; minSize: number; maxSize: number | null }>>([]);
     const [fundingStages, setFundingStages] = useState<Array<{ id: string; name: string; order: number }>>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -101,6 +102,8 @@ export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: Subm
 
     const onSubmit = async (data: StartupFormData) => {
         setIsSubmitting(true);
+        setIsProcessingLogo(false);
+
         try {
             const formData = new FormData();
             formData.append('directoryId', directorySlug);
@@ -108,7 +111,10 @@ export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: Subm
             formData.append('shortDescription', data.shortDescription);
             if (data.longDescription) formData.append('longDescription', data.longDescription);
             formData.append('websiteUrl', data.websiteUrl);
-            if (data.logoUrl) formData.append('logoUrl', data.logoUrl);
+            if (data.logoUrl) {
+                formData.append('logoUrl', data.logoUrl);
+                setIsProcessingLogo(true);
+            }
             if (data.foundedAt) formData.append('foundedAt', data.foundedAt);
             formData.append('location', data.location);
             if (data.latitude) formData.append('latitude', data.latitude.toString());
@@ -133,6 +139,7 @@ export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: Subm
             });
         } finally {
             setIsSubmitting(false);
+            setIsProcessingLogo(false);
         }
     };
 
@@ -245,6 +252,9 @@ export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: Subm
                                         <FormControl>
                                             <Input placeholder="https://example.com/logo.png" {...field} />
                                         </FormControl>
+                                        <p className="text-muted-foreground text-sm">
+                                            💡 The image will be automatically uploaded to Postimages.org to ensure permanent availability.
+                                        </p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -384,7 +394,7 @@ export function SubmitStartupSheet({ isOpen, onOpenChange, directorySlug }: Subm
                             </Button>
                             <Button
                                 type="submit"
-                                loadingText='Wait a sec...'
+                                loadingText="Wait a sec..."
                                 isLoading={isSubmitting}
                             >
                                 Submit

@@ -31,7 +31,7 @@ async function DirectoryHeaderWrapper({ slug }: { slug: string }) {
 
     if (!directory) {
         return (
-            <div className='flex justify-between items-center px-7'>
+            <div className='flex items-center justify-between px-7'>
                 <h1 className="font-brand text-3xl">Directory not found</h1>
                 <NavMobile />
             </div>
@@ -93,7 +93,7 @@ async function StartupListWrapper({
     if (startups.length === 0) {
         return (
             <>
-                <div className='flex flex-col gap-1 px-3 py-4 w-full h-full'>
+                <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
                     <Empty title="No startups found" description="No startups found matching the selected filters." />
                 </div>
                 <StartupPagination
@@ -112,7 +112,7 @@ async function StartupListWrapper({
 
     return (
         <>
-            <div className='flex flex-col gap-1 px-3 py-4 w-full h-full'>
+            <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
                 {startups.map((startup) => (
                     <DashboardStartupCard
                         key={startup.id}

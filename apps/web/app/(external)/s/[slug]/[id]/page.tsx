@@ -40,7 +40,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
 
     return (
         <Suspense fallback={
-            <div className='relative flex lg:flex-row flex-col gap-4 p-6 pb-0 w-full min-h-dvh'>
+            <div className='relative flex min-h-dvh w-full flex-col gap-4 p-6 pb-0 lg:flex-row'>
                 <LeftPanelSkeleton />
                 <RightPanelSkeleton />
             </div>

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { DirectoryOrder, GetDirectories } from '@/types/directory'
 import { DIRECTORY_PAGE_SIZE, } from '@/types/directory'
 import { revalidatePath } from 'next/cache'
+import { processImageUrl } from './image-upload'
 
 const includeForUsefullDataDirectory = {
     _count: {
@@ -187,13 +188,24 @@ export async function createDirectoryAction(formData: FormData) {
 
     const name = formData.get('name') as string
     const description = formData.get('description') as string
-    const imageUrl = formData.get('imageUrl') as string
+    let imageUrl: string | null = formData.get('imageUrl') as string
     const link = formData.get('link') as string
     const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
     const location = formData.get('location') as string
     const longitude = formData.get('longitude') ? Number.parseFloat(formData.get('longitude') as string) : null
     const latitude = formData.get('latitude') ? Number.parseFloat(formData.get('latitude') as string) : null
     const slug = formData.get('slug') as string
+
+    // Process image URL if provided
+    if (imageUrl && imageUrl.trim() !== '') {
+        try {
+            imageUrl = await processImageUrl(imageUrl);
+        } catch (error) {
+            console.error('Error processing image:', error);
+            // If upload fails, continue without image
+            imageUrl = null;
+        }
+    }
 
     // Check if the slug is unique
     const isSlugUnique = await checkSlugUniqueness(slug)
@@ -429,7 +441,7 @@ export async function updateDirectoryAction(formData: FormData) {
     const directoryId = formData.get('directoryId') as string
     const name = formData.get('name') as string
     const description = formData.get('description') as string
-    const imageUrl = formData.get('imageUrl') ? (formData.get('imageUrl') as string) : null
+    let imageUrl: string | null = formData.get('imageUrl') ? (formData.get('imageUrl') as string) : null
     const link = formData.get('link') ? (formData.get('link') as string) : null
     const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
     const location = formData.get('location') ? (formData.get('location') as string) : null
@@ -437,10 +449,15 @@ export async function updateDirectoryAction(formData: FormData) {
     const latitude = formData.get('latitude') ? Number.parseFloat(formData.get('latitude') as string) : null
     const slug = formData.get('slug') as string
 
-    // Check if the slug is unique
-    const isSlugUnique = await checkSlugUniqueness(slug)
-    if (!isSlugUnique) {
-        throw new Error('Slug already exists. Choose a different slug.')
+    // Process image URL if provided
+    if (imageUrl && imageUrl.trim() !== '') {
+        try {
+            imageUrl = await processImageUrl(imageUrl);
+        } catch (error) {
+            console.error('Error processing image:', error);
+            // If upload fails, continue without image
+            imageUrl = null;
+        }
     }
 
     // Check if the directory exists and the user has access
@@ -463,6 +480,14 @@ export async function updateDirectoryAction(formData: FormData) {
     // Check if the user has access to the directory using the ID
     if (existingDirectory.userId !== user.id) {
         throw new Error('You do not have access to this directory')
+    }
+
+    // Only check slug uniqueness if the slug has changed
+    if (slug !== existingDirectory.slug) {
+        const isSlugUnique = await checkSlugUniqueness(slug)
+        if (!isSlugUnique) {
+            throw new Error('Slug already exists. Choose a different slug.')
+        }
     }
 
     await prisma.directory.update({

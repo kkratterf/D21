@@ -49,6 +49,7 @@ const generateSlug = (name: string) => {
 
 export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySheetProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isProcessingImage, setIsProcessingImage] = useState(false);
 
     const form = useForm<DirectoryFormData>({
         resolver: zodResolver(directoryFormSchema),
@@ -78,11 +79,16 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
 
     const onSubmit = async (data: DirectoryFormData) => {
         setIsSubmitting(true);
+        setIsProcessingImage(false);
+
         try {
             const formData = new FormData();
             formData.append('name', data.name);
             formData.append('description', data.description);
-            if (data.imageUrl) formData.append('imageUrl', data.imageUrl);
+            if (data.imageUrl) {
+                formData.append('imageUrl', data.imageUrl);
+                setIsProcessingImage(true);
+            }
             if (data.link) formData.append('link', data.link);
             formData.append('tags', data.tags.join(','));
             if (data.location) formData.append('location', data.location);
@@ -99,6 +105,7 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
             toast.error('Error creating directory');
         } finally {
             setIsSubmitting(false);
+            setIsProcessingImage(false);
         }
     };
 
@@ -183,6 +190,9 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
                                         <FormControl>
                                             <Input placeholder="https://example.com/image.png" {...field} />
                                         </FormControl>
+                                        <p className="text-muted-foreground text-sm">
+                                            💡 The image will be automatically uploaded to Postimages.org to ensure permanent availability.
+                                        </p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -202,7 +212,7 @@ export function CreateDirectorySheet({ isOpen, onOpenChange }: CreateDirectorySh
                             </Button>
                             <Button
                                 type="submit"
-                                loadingText='Creating...'
+                                loadingText='Wait a sec...'
                                 isLoading={isSubmitting}
                             >
                                 Create

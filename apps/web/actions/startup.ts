@@ -7,6 +7,7 @@ import { PAGE_SIZE, } from '@/types/startup'
 import { Decimal } from 'decimal.js'
 import { revalidatePath } from 'next/cache'
 import { checkDirectoryAccess } from './directory'
+import { processImageUrl } from './image-upload'
 
 // Include per i dati utili delle startup
 const includeForUsefullDataStartup = {
@@ -140,7 +141,7 @@ export async function createStartupAction(formData: FormData) {
     const shortDescription = formData.get('shortDescription') as string
     const longDescription = formData.get('longDescription') ? (formData.get('longDescription') as string) : null
     const websiteUrl = formData.get('websiteUrl') as string
-    const logoUrl = formData.get('logoUrl') ? (formData.get('logoUrl') as string) : null
+    let logoUrl = formData.get('logoUrl') ? (formData.get('logoUrl') as string) : null
     const foundedAt = formData.get('foundedAt') ? new Date(formData.get('foundedAt') as string) : null
     const location = (formData.get('location') as string) || ''
     const longitude = formData.get('longitude') ? Number.parseFloat(formData.get('longitude') as string) : 0
@@ -152,6 +153,17 @@ export async function createStartupAction(formData: FormData) {
     const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
     const amountRaised = formData.get('amountRaised') ? new Decimal(formData.get('amountRaised') as string) : null
     const currency = formData.get('currency') && (formData.get('currency') as string).trim() ? (formData.get('currency') as string).trim() : null
+
+    // Process logo URL if provided
+    if (logoUrl && logoUrl.trim() !== '') {
+        try {
+            logoUrl = await processImageUrl(logoUrl);
+        } catch (error) {
+            console.error('Error processing logo:', error);
+            // If upload fails, continue without logo
+            logoUrl = null;
+        }
+    }
 
     // Generate unique slug
     const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -228,7 +240,7 @@ export async function updateStartupAction(formData: FormData) {
     const shortDescription = formData.get('shortDescription') as string
     const longDescription = formData.get('longDescription') ? (formData.get('longDescription') as string) : null
     const websiteUrl = formData.get('websiteUrl') as string
-    const logoUrl = formData.get('logoUrl') ? (formData.get('logoUrl') as string) : null
+    let logoUrl = formData.get('logoUrl') ? (formData.get('logoUrl') as string) : null
     const foundedAt = formData.get('foundedAt') ? new Date(formData.get('foundedAt') as string) : null
     const location = (formData.get('location') as string) || ''
     const longitude = formData.get('longitude') ? Number.parseFloat(formData.get('longitude') as string) : 0
@@ -240,6 +252,17 @@ export async function updateStartupAction(formData: FormData) {
     const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
     const amountRaised = formData.get('amountRaised') ? new Decimal(formData.get('amountRaised') as string) : null
     const currency = formData.get('currency') && (formData.get('currency') as string).trim() ? (formData.get('currency') as string).trim() : null
+
+    // Process logo URL if provided
+    if (logoUrl && logoUrl.trim() !== '') {
+        try {
+            logoUrl = await processImageUrl(logoUrl);
+        } catch (error) {
+            console.error('Error processing logo:', error);
+            // If upload fails, continue without logo
+            logoUrl = null;
+        }
+    }
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 

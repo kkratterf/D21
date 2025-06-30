@@ -25,17 +25,17 @@ import { TagInput } from './tag-input';
 const startupFormSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     shortDescription: z.string().min(10, 'Short description must be at least 10 characters'),
-    longDescription: z.string().optional().or(z.literal('')),
+    longDescription: z.string().min(10, 'Long description must be at least 10 characters'),
     websiteUrl: z.string().url('Please enter a valid URL'),
     logoUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-    foundedAt: z.string().optional().or(z.literal('')),
+    foundedAt: z.string().min(1, 'Founded date is required'),
     location: z.string().min(1, 'Location is required'),
-    latitude: z.number().optional().or(z.literal(0)),
-    longitude: z.number().optional().or(z.literal(0)),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
     teamSizeId: z.string().min(1, 'Please select team size'),
     fundingStageId: z.string().min(1, 'Please select funding stage'),
     contactEmail: z.string().email('Please enter a valid email').optional().or(z.literal('')),
-    linkedinUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+    linkedinUrl: z.string().url('Please enter a valid URL').min(1, 'LinkedIn URL is required'),
     tags: z.array(z.string()).min(1, 'Please enter at least one tag'),
     amountRaised: z.string().optional().or(z.literal('')),
     currency: z.string().optional().or(z.literal('')),
@@ -52,7 +52,7 @@ interface EditStartupSheetProps {
         name: string;
         shortDescription: string;
         longDescription?: string | null;
-        websiteUrl: string | null;
+        websiteUrl?: string | null;
         logoUrl?: string | null;
         foundedAt?: Date | null;
         location: string;
@@ -64,11 +64,13 @@ interface EditStartupSheetProps {
         linkedinUrl?: string | null;
         tags: string[];
         amountRaised?: number | null;
+        currency?: string | null;
     };
 }
 
 export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup }: EditStartupSheetProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isProcessingLogo, setIsProcessingLogo] = useState(false);
     const [teamSizes, setTeamSizes] = useState<Array<{ id: string; name: string; minSize: number; maxSize: number | null }>>([]);
     const [fundingStages, setFundingStages] = useState<Array<{ id: string; name: string; order: number }>>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -91,9 +93,36 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             linkedinUrl: startup.linkedinUrl || '',
             tags: startup.tags,
             amountRaised: startup.amountRaised?.toString() || '',
-            currency: '',
+            currency: startup.currency || '',
         },
     });
+
+    // Reset form when startup changes
+    useEffect(() => {
+        form.reset({
+            name: startup.name,
+            shortDescription: startup.shortDescription,
+            longDescription: startup.longDescription || '',
+            websiteUrl: startup.websiteUrl || '',
+            logoUrl: startup.logoUrl || '',
+            foundedAt: startup.foundedAt ? startup.foundedAt.toISOString().split('T')[0] : '',
+            location: startup.location,
+            latitude: startup.latitude || 0,
+            longitude: startup.longitude || 0,
+            teamSizeId: startup.teamSizeId,
+            fundingStageId: startup.fundingStageId,
+            contactEmail: startup.contactEmail || '',
+            linkedinUrl: startup.linkedinUrl || '',
+            tags: startup.tags,
+            amountRaised: startup.amountRaised?.toString() || '',
+            currency: startup.currency || '',
+        });
+
+        // Trigger validation after reset
+        setTimeout(() => {
+            form.trigger();
+        }, 100);
+    }, [startup, form]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -117,30 +146,10 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
         }
     }, [isOpen]);
 
-    // Reset form when startup changes
-    useEffect(() => {
-        form.reset({
-            name: startup.name,
-            shortDescription: startup.shortDescription,
-            longDescription: startup.longDescription || '',
-            websiteUrl: startup.websiteUrl || '',
-            logoUrl: startup.logoUrl || '',
-            foundedAt: startup.foundedAt ? startup.foundedAt.toISOString().split('T')[0] : '',
-            location: startup.location,
-            latitude: startup.latitude || 0,
-            longitude: startup.longitude || 0,
-            teamSizeId: startup.teamSizeId,
-            fundingStageId: startup.fundingStageId,
-            contactEmail: startup.contactEmail || '',
-            linkedinUrl: startup.linkedinUrl || '',
-            tags: startup.tags,
-            amountRaised: startup.amountRaised?.toString() || '',
-            currency: '',
-        });
-    }, [startup, form]);
-
     const onSubmit = async (data: StartupFormData) => {
         setIsSubmitting(true);
+        setIsProcessingLogo(false);
+
         try {
             const formData = new FormData();
             formData.append('startupId', startup.id);
@@ -149,7 +158,13 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             formData.append('shortDescription', data.shortDescription);
             if (data.longDescription) formData.append('longDescription', data.longDescription);
             formData.append('websiteUrl', data.websiteUrl);
-            if (data.logoUrl) formData.append('logoUrl', data.logoUrl);
+            if (data.logoUrl) {
+                formData.append('logoUrl', data.logoUrl);
+                // Only process if it's not already a Postimages.org URL
+                if (!data.logoUrl.includes('postimg.cc') && !data.logoUrl.includes('postimages.org')) {
+                    setIsProcessingLogo(true);
+                }
+            }
             if (data.foundedAt) formData.append('foundedAt', data.foundedAt);
             formData.append('location', data.location);
             if (data.latitude) formData.append('latitude', data.latitude.toString());
@@ -157,7 +172,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             formData.append('teamSizeId', data.teamSizeId);
             formData.append('fundingStageId', data.fundingStageId);
             if (data.contactEmail) formData.append('contactEmail', data.contactEmail);
-            if (data.linkedinUrl) formData.append('linkedinUrl', data.linkedinUrl);
+            formData.append('linkedinUrl', data.linkedinUrl);
             formData.append('tags', data.tags.join(','));
             if (data.amountRaised) formData.append('amountRaised', data.amountRaised);
             if (data.currency) formData.append('currency', data.currency);
@@ -170,6 +185,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
             toast.error('Error updating startup');
         } finally {
             setIsSubmitting(false);
+            setIsProcessingLogo(false);
         }
     };
 
@@ -192,7 +208,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
             <SheetContent className="w-full sm:max-w-lg">
                 <Form {...form}>
-                    <form>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
                         <SheetHeader className="space-y-3">
                             <SheetTitle className="text-left">Edit startup</SheetTitle>
                         </SheetHeader>
@@ -227,6 +243,7 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                                     </FormItem>
                                 )}
                             />
+
                             <FormField
                                 control={form.control}
                                 name="longDescription"
@@ -282,6 +299,9 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                                         <FormControl>
                                             <Input placeholder="https://example.com/logo.png" {...field} />
                                         </FormControl>
+                                        <p className="text-muted-foreground text-sm">
+                                            💡 The image will be automatically uploaded to Postimages.org to ensure permanent availability.
+                                        </p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -421,16 +441,15 @@ export function EditStartupSheet({ isOpen, onOpenChange, directorySlug, startup 
                             </Button>
                             <Button
                                 type="submit"
-                                loadingText='Wait a sec...'
+                                loadingText="Wait a sec..."
                                 isLoading={isSubmitting}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    const values = form.getValues();
-                                    form.trigger().then((isValid) => {
-                                        if (isValid) {
-                                            onSubmit(values);
-                                        }
-                                    });
+                                onClick={async () => {
+                                    // Trigger manual validation and submit if valid
+                                    const isValid = await form.trigger();
+                                    if (isValid) {
+                                        const formData = form.getValues();
+                                        await onSubmit(formData);
+                                    }
                                 }}
                             >
                                 Edit
