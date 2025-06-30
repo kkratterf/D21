@@ -1,11 +1,6 @@
 import Footer from "@/components/layout/footer";
 import NavMobile from "@/components/layout/nav-mobile";
-import { PartnersGrid } from "@/components/modules/manifesto/partners-grid";
-import { partners } from '@/lib/partners';
 import { Separator } from "@d21/design-system/components/ui/separator";
-import { cn } from "@d21/design-system/lib/utils";
-import { focusRing } from "@d21/design-system/lib/utils";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function ManifestoPage() {
@@ -60,8 +55,9 @@ export default function ManifestoPage() {
                         in early 2025
                     </p>
                 </div>
-                <Separator />
+                {/* <Separator /> */}
             </div>
+            {/*
             <div className="flex flex-col gap-8">
                 <h3 className="px-4 font-brand text-2xl">Partners</h3>
                 <PartnersGrid>
@@ -78,13 +74,14 @@ export default function ManifestoPage() {
                                     height={40}
                                     alt={partner.name}
                                     src={`/images/partners/${partner.image}`}
-                                    className='h-12 w-44 px-2 brightness-0 dark:invert'
+                                    className='brightness-0 dark:invert px-2 w-44 h-12'
                                 />
                             </Link>
                         ))}
                     </div>
                 </PartnersGrid>
             </div>
+            */}
             <Footer />
         </div>
     )

@@ -1,23 +1,11 @@
-import type { FundingStage, Startup, TeamSize } from '@prisma/client';
+import type { } from '@prisma/client';
 
 import ShareButtons from '@/components/ui/share-buttons';
+import type { Startup } from '@/types/startup';
 import { Card } from "@d21/design-system/components/ui/card";
 
-interface StartupWithRelations extends Omit<Startup, 'amountRaised' | 'description'> {
-    amountRaised: number | null;
-    shortDescription: string;
-    longDescription: string | null;
-    teamSize: TeamSize | null;
-    fundingStage: FundingStage | null;
-    directory: {
-        id: string;
-        name: string;
-        slug: string;
-    };
-}
-
 interface RightProps {
-    startup: StartupWithRelations;
+    startup: Startup;
 }
 
 const RightPanel = ({ startup }: RightProps) => {
@@ -66,7 +54,10 @@ const RightPanel = ({ startup }: RightProps) => {
                 </Card>
                 <div className='flex w-full flex-row items-center justify-between px-6 py-3 pb-12'>
                     <p className="font-mono text-description text-sm">Share</p>
-                    <ShareButtons />
+                    <ShareButtons
+                        directorySlug={startup.directory.slug}
+                        startupId={startup.id}
+                    />
                 </div>
             </div>
         </div>

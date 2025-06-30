@@ -31,7 +31,7 @@ async function DirectoryHeaderWrapper({ slug }: { slug: string }) {
 
     if (!directory) {
         return (
-            <div className='flex items-center justify-between px-7'>
+            <div className='flex justify-between items-center px-7'>
                 <h1 className="font-brand text-3xl">Directory not found</h1>
                 <NavMobile />
             </div>
@@ -93,7 +93,7 @@ async function StartupListWrapper({
     if (startups.length === 0) {
         return (
             <>
-                <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
+                <div className='flex flex-col gap-1 px-3 py-4 w-full h-full'>
                     <Empty title="No startups found" description="No startups found matching the selected filters." />
                 </div>
                 <StartupPagination
@@ -112,7 +112,7 @@ async function StartupListWrapper({
 
     return (
         <>
-            <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
+            <div className='flex flex-col gap-1 px-3 py-4 w-full h-full'>
                 {startups.map((startup) => (
                     <DashboardStartupCard
                         key={startup.id}
@@ -141,7 +141,7 @@ export default async function AdminDirectoryPage({ params, searchParams }: Admin
     const { slug } = await params
     const waitedParams = await searchParams
 
-    // Verifica autenticazione e accesso
+    // Check authentication and access
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -149,13 +149,13 @@ export default async function AdminDirectoryPage({ params, searchParams }: Admin
         redirect('/login')
     }
 
-    // Verifica che l'utente abbia accesso alla directory
+    // Check if the user has access to the directory
     const hasAccess = await checkDirectoryAccess(slug, user.id)
     if (!hasAccess) {
         return <Empty title="No access" description="You don't have access to this directory." />
     }
 
-    // Verifica che la directory esista
+    // Check if the directory exists
     const directory = await getDirectoryBySlugForAdmin(slug)
     if (!directory) {
         return <Empty title="Directory not found" description="The directory you are looking for does not exist." />
@@ -170,17 +170,17 @@ export default async function AdminDirectoryPage({ params, searchParams }: Admin
 
     return (
         <div className="flex flex-col pt-6">
-            {/* Header con skeleton - il controllo della directory è qui */}
+            {/* Header with skeleton - the directory check is here */}
             <Suspense fallback={<DirectoryHeaderSkeleton />}>
                 <DirectoryHeaderWrapper slug={slug} />
             </Suspense>
 
-            {/* Filtri con skeleton - caricamento parallelo */}
+            {/* Filters with skeleton - parallel loading */}
             <Suspense fallback={<StartupFiltersSkeleton />}>
                 <StartupFiltersWrapper slug={slug} />
             </Suspense>
 
-            {/* Lista startup con skeleton - caricamento parallelo */}
+            {/* Startup list with skeleton - parallel loading */}
             <Suspense fallback={<Loading />}>
                 <ScrollToTop />
                 <StartupListWrapper

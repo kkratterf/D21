@@ -31,7 +31,7 @@ export async function generateMetadata(
 export default async function SlugPage({ params }: SlugPageProps) {
     const { id } = await params;
 
-    // Verifica che la startup esista per mostrare Empty se necessario
+    // Check if the startup exists to show Empty if necessary
     const startup = await getStartupById(id);
 
     if (!startup) {

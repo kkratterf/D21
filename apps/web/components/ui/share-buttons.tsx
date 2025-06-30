@@ -7,19 +7,28 @@ import { Button } from "@d21/design-system/components/ui/button";
 import { toast } from "@d21/design-system/components/ui/toast";
 import { Tooltip } from "@d21/design-system/components/ui/tooltip";
 
-const ShareButtons = () => {
+interface ShareButtonsProps {
+    directorySlug: string;
+    startupId: string;
+}
+
+const ShareButtons = ({ directorySlug, startupId }: ShareButtonsProps) => {
     const [copied, setCopied] = useState(false);
 
+    const getStartupUrl = () => {
+        return `https://www.d21.so/s/${directorySlug}/${startupId}`;
+    };
+
     const shareOnLinkedIn = () => {
-        const currentUrl = window.location.href;
+        const startupUrl = getStartupUrl();
         const shareText = "<< Your thoughts go here >>";
-        const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(`${shareText}\n\n${currentUrl}`)}`;
+        const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(startupUrl)}&text=${encodeURIComponent(`${shareText}\n\n${startupUrl}`)}`;
         window.open(linkedInShareUrl, '_blank', 'width=600,height=600');
     };
 
     const copyToClipboard = async () => {
-        const currentUrl = window.location.href;
-        await navigator.clipboard.writeText(currentUrl);
+        const startupUrl = getStartupUrl();
+        await navigator.clipboard.writeText(startupUrl);
         setCopied(true);
         toast("📣 Copied to clipboard. Ready to share!");
         setTimeout(() => setCopied(false), 5000);

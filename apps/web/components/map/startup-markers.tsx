@@ -1,33 +1,19 @@
 "use client";
 
 import { useMap } from "@/context/map-context";
+import type { Startup } from '@/types/startup';
 import { Avatar, AvatarFallback, AvatarImage } from "@d21/design-system/components/ui/avatar";
+import { Button } from "@d21/design-system/components/ui/button";
+import { Card } from "@d21/design-system/components/ui/card";
+import { Separator } from "@d21/design-system/components/ui/separator";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@d21/design-system/components/ui/sheet";
+import { Tag } from "@d21/design-system/components/ui/tag";
 import { Tooltip, TooltipProvider } from "@d21/design-system/components/ui/tooltip";
+import { Globe, XIcon } from "lucide-react";
+import Link from "next/link";
 import { useEffect, } from "react";
+import ReactMarkdown from "react-markdown";
 import Marker from "./map-marker";
-
-interface Startup {
-    id: string;
-    name: string;
-    description?: string;
-    latitude: number;
-    longitude: number;
-    logo?: string;
-    industry?: string;
-    logoUrl?: string;
-    location?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-    slug?: string;
-    tags?: string[];
-    teamSize?: { name: string } | null;
-    fundingStage?: { name: string } | null;
-    directory?: {
-        id: string;
-        name: string;
-        slug: string;
-    };
-}
 
 interface StartupMarkersProps {
     startups: Startup[];
@@ -161,14 +147,116 @@ export default function StartupMarkers({ startups, loading = false }: StartupMar
                     }}
                 >
                     <TooltipProvider delayDuration={200}>
-                        <Tooltip side="top" content={startup.name}>
-                            <div className='border-0 bg-transparent p-0'>
-                                <Avatar className='size-9 transform rounded-lg border border-default transition-all duration-200 hover:scale-110'>
-                                    <AvatarImage src={startup.logoUrl || ""} />
-                                    <AvatarFallback>{startup.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                            </div>
-                        </Tooltip>
+                        <Sheet>
+                            <SheetTrigger>
+                                <Tooltip side="top" content={startup.name}>
+                                    <div className='border-0 bg-elevated p-0'>
+                                        <Avatar className='size-9 transform rounded-lg border border-default transition-all duration-200 hover:scale-110'>
+                                            <AvatarImage src={startup.logoUrl || ""} />
+                                            <AvatarFallback>{startup.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                    </div>
+                                </Tooltip>
+                            </SheetTrigger>
+                            <SheetContent className="gap-6 pt-4 sm:pt-6">
+                                <div className='flex w-full flex-col gap-4'>
+                                    <div className='flex w-full flex-col gap-3'>
+                                        <div className='flex flex-row items-start justify-between gap-3'>
+                                            <Avatar className='size-16 rounded-xl border border-border'>
+                                                <AvatarImage
+                                                    className='transition-all duration-400 group-hover:scale-105'
+                                                    src={startup.logoUrl || ""}
+                                                    alt={startup.name}
+                                                    width={48}
+                                                    height={48}
+                                                />
+                                                <AvatarFallback>
+                                                    {startup.name.slice(0, 2)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex flex-row gap-1">
+                                                {startup.websiteUrl && (
+                                                    <Tooltip content="Visit website">
+                                                        <Button variant="secondary" icon asChild>
+                                                            <Link target="_blank" href={startup.websiteUrl}>
+                                                                <Globe />
+                                                            </Link>
+                                                        </Button>
+                                                    </Tooltip>
+                                                )}
+                                                {startup.linkedinUrl && (
+                                                    <Button variant="secondary" asChild>
+                                                        <Link target="_blank" href={startup.linkedinUrl}>
+                                                            Linkedin
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                                <SheetClose asChild>
+                                                    <Button icon variant="text">
+                                                        <XIcon />
+                                                    </Button>
+                                                </SheetClose>
+                                            </div>
+                                        </div>
+                                        <div className='flex flex-col gap-1'>
+                                            <SheetTitle className='!font-brand !text-3xl w-full'>{startup.name}</SheetTitle>
+                                            <p className='text-base'>{startup.shortDescription}</p>
+                                        </div>
+                                    </div>
+                                    {startup.tags && startup.tags.length > 0 && (
+                                        <div className="flex flex-row gap-1">
+                                            {startup.tags.map((tag, index) => (
+                                                <Tag
+                                                    variant="neutral"
+                                                    className='rounded-full border-border bg-background text-description'
+                                                    key={index}
+                                                >
+                                                    {tag}
+                                                </Tag>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <ReactMarkdown className='prose prose-sm prose-headings:text max-w-none prose-headings:font-brand prose-p:text-description text-base text-description leading-6'>
+                                    {startup.longDescription}
+                                </ReactMarkdown>
+                                <Separator />
+                                <Card className='flex w-full flex-col gap-3 bg-transparent'>
+                                    {startup.fundingStage && (
+                                        <div className='flex flex-row items-center justify-between'>
+                                            <p className="font-mono text-description">Funding stage</p>
+                                            <p className="font-mono">{startup.fundingStage.name}</p>
+                                        </div>
+                                    )}
+                                    {startup.amountRaised && (
+                                        <div className='flex flex-row items-center justify-between'>
+                                            <p className="font-mono text-description">Amount raised</p>
+                                            <p className="font-mono">{startup.amountRaised.toLocaleString('it-IT')} {startup.currency}</p>
+                                        </div>
+                                    )}
+                                    <div className='flex flex-row items-center justify-between'>
+                                        <p className="font-mono text-description">Team size</p>
+                                        {startup.teamSize ? (
+                                            <p className="font-mono">{startup.teamSize.name}</p>
+                                        ) : (
+                                            <p className="font-mono">Unknown</p>
+                                        )}
+                                    </div>
+                                    <div className='flex flex-row items-center justify-between'>
+                                        <p className="font-mono text-description">Foundation date</p>
+                                        <p className="font-mono">{startup.foundedAt ? startup.foundedAt.getFullYear() : 'Unknown'}</p>
+                                    </div>
+                                    {startup.contactEmail && (
+                                        <div className='flex flex-row items-center justify-between'>
+                                            <p className="font-mono text-description">Contact email</p>
+                                            <p className="font-mono">{startup.contactEmail}</p>
+                                        </div>
+                                    )}
+
+                                </Card>
+                            </SheetContent>
+                        </Sheet>
                     </TooltipProvider>
                 </Marker>
             ))}

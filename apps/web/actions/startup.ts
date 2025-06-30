@@ -153,7 +153,24 @@ export async function createStartupAction(formData: FormData) {
     const amountRaised = formData.get('amountRaised') ? new Decimal(formData.get('amountRaised') as string) : null
     const currency = formData.get('currency') && (formData.get('currency') as string).trim() ? (formData.get('currency') as string).trim() : null
 
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    // Generate unique slug
+    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    let slug = baseSlug
+    let counter = 1
+
+    // Check if slug exists and generate a unique one
+    while (true) {
+        const existingStartup = await prisma.startup.findUnique({
+            where: { slug }
+        })
+
+        if (!existingStartup) {
+            break
+        }
+
+        slug = `${baseSlug}-${counter}`
+        counter++
+    }
 
     await prisma.startup.create({
         data: {
@@ -198,7 +215,7 @@ export async function updateStartupAction(formData: FormData) {
         throw new Error('Directory not found')
     }
 
-    // Verifica che la startup esista
+    // Check if the startup exists
     const existingStartup = await prisma.startup.findUnique({
         where: { id: startupId }
     })
@@ -684,7 +701,7 @@ export async function approveStartup(startupId: string) {
 
         return {
             success: true,
-            message: '✅ Startup approvata con successo!',
+            message: '✅ Startup approved successfully!',
             startupId: updatedStartup.id
         }
     } catch (error) {
@@ -727,7 +744,7 @@ export async function rejectStartup(startupId: string) {
 
         return {
             success: true,
-            message: '❌ Startup rifiutata e rimossa',
+            message: '❌ Startup rejected and removed',
             startupId: startupId
         }
     } catch (error) {
@@ -773,8 +790,8 @@ export async function getStartupsByDirectoryForAdmin({
     const query = {
         where: {
             directoryId: directory.id,
-            // Se includeHidden è true, mostra tutte le startup (visibili e non)
-            // Altrimenti mostra solo quelle visibili
+            // If includeHidden is true, show all startups (visible and not)
+            // Otherwise show only visible startups
             ...(includeHidden ? {} : { visible: true }),
             name: name ? {
                 contains: name,

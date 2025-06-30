@@ -1,6 +1,6 @@
-import type { FundingStage, Startup, TeamSize } from '@prisma/client';
 import Link from 'next/link';
 
+import type { Startup } from '@/types/startup';
 import {
     Avatar,
     AvatarFallback,
@@ -10,36 +10,25 @@ import { Skeleton } from '@d21/design-system/components/ui/skeleton';
 import { Tag } from '@d21/design-system/components/ui/tag';
 import { cn, focusRing } from '@d21/design-system/lib/utils';
 
-interface StartupWithRelations extends Omit<Startup, 'amountRaised' | 'description'> {
-    amountRaised: number | null;
-    shortDescription: string;
-    longDescription: string | null;
-    teamSize: TeamSize | null;
-    fundingStage: FundingStage | null;
-    directory: {
-        id: string;
-        name: string;
-        slug: string;
-    };
-}
-
 interface StartupCardProps {
-    item: StartupWithRelations;
+    item: Startup;
     selectedTags?: string[];
     selectedFundingStages?: string[];
     selectedTeamSizes?: string[];
+    shared?: boolean
 }
 
 const StartupCard = ({
     item,
     selectedTags = [],
     selectedFundingStages = [],
-    selectedTeamSizes = []
+    selectedTeamSizes = [],
+    shared = false
 }: StartupCardProps) => {
     return (
         <Link
             key={item.name}
-            href={`/${item.directory.slug}/${item.id}`}
+            href={shared ? `/s/${item.directory.slug}/${item.id}` : `/${item.directory.slug}/${item.id}`}
             className={cn('rounded-xl', focusRing)}
         >
             <div className='group group flew-row flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-item-hover'>
@@ -67,7 +56,7 @@ const StartupCard = ({
                             <Tag
                                 variant="neutral"
                                 className={cn('rounded-full',
-                                    selectedFundingStages.includes(item.fundingStage.id)
+                                    selectedFundingStages.includes(item.fundingStageId || '')
                                         ? 'text border-item bg-item-hover'
                                         : 'border-border bg-background text-description'
                                 )}
@@ -79,7 +68,7 @@ const StartupCard = ({
                             <Tag
                                 variant="neutral"
                                 className={cn('rounded-full',
-                                    selectedTeamSizes.includes(item.teamSize.id)
+                                    selectedTeamSizes.includes(item.teamSizeId || '')
                                         ? 'text border-item bg-item-hover'
                                         : 'border-border bg-background text-description'
                                 )}

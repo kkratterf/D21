@@ -1,6 +1,5 @@
 'use client';
 
-import type { FundingStage, Startup, TeamSize } from '@prisma/client';
 import Link from 'next/link';
 import type React from 'react';
 import { useState } from 'react';
@@ -16,6 +15,7 @@ import { Tag } from '@d21/design-system/components/ui/tag';
 import { cn, focusRing } from '@d21/design-system/lib/utils';
 import { CheckIcon, ExternalLink, LinkIcon, MoreHorizontal } from 'lucide-react';
 
+import type { Startup } from '@/types/startup';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@d21/design-system/components/ui/dropdown-menu';
 import { toast } from '@d21/design-system/components/ui/toast';
 import { Tooltip } from '@d21/design-system/components/ui/tooltip';
@@ -24,21 +24,8 @@ import { DeleteStartupButton } from '../modules/dashboard/delete-startup-button'
 import { EditStartupButton } from '../modules/dashboard/edit-startup-button';
 import { EditStartupSheet } from '../modules/startups/edit-startup-sheet';
 
-interface StartupWithRelations extends Omit<Startup, 'amountRaised' | 'description'> {
-    amountRaised: number | null;
-    shortDescription: string;
-    longDescription: string | null;
-    teamSize: TeamSize | null;
-    fundingStage: FundingStage | null;
-    directory: {
-        id: string;
-        name: string;
-        slug: string;
-    };
-}
-
 interface DashboardStartupCardProps {
-    item: StartupWithRelations;
+    item: Startup;
     selectedTags?: string[];
     selectedFundingStages?: string[];
     selectedTeamSizes?: string[];
@@ -94,7 +81,7 @@ const DashboardStartupCard = ({
         name: item.name,
         shortDescription: item.shortDescription,
         longDescription: item.longDescription,
-        websiteUrl: item.websiteUrl,
+        websiteUrl: item.websiteUrl || null,
         logoUrl: item.logoUrl,
         foundedAt: item.foundedAt,
         location: item.location,

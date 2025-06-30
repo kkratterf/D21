@@ -47,7 +47,7 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
-        // Se il click è su un controllo, non navigare
+        // If the click is on a control, do not navigate
         const target = e.target as HTMLElement;
         const isControl = target.closest('[data-control]') ||
             target.closest('button') ||
@@ -78,11 +78,11 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
             className={cn('rounded-xl', focusRing)}
             onClick={handleCardClick}
         >
-            <div className='group flew-row flex items-center gap-3 rounded-xl py-2 pr-3.5 pl-3 hover:bg-item-hover'>
+            <div className='group flex items-center gap-3 hover:bg-item-hover py-2 pr-3.5 pl-3 rounded-xl flew-row'>
                 <div className='flex flex-1 items-center gap-3'>
-                    <Avatar className='size-10 rounded-xl border border-border'>
+                    <Avatar className='border border-border rounded-xl size-10'>
                         <AvatarImage
-                            className='transition-all duration-400 group-hover:scale-105'
+                            className='group-hover:scale-105 transition-all duration-400'
                             src={item.imageUrl || ""}
                             alt={item.name}
                             width={40}
@@ -92,9 +92,9 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                             {item.name.slice(0, 1)}
                         </AvatarFallback>
                     </Avatar>
-                    <div className='flex w-full flex-row items-center gap-2'>
-                        <p className='whitespace-nowrap font-semibold text-base'>{item.name}</p>
-                        <p className='line-clamp-1 text-description text-sm'>
+                    <div className='flex flex-row items-center gap-2 w-full'>
+                        <p className='font-semibold text-base whitespace-nowrap'>{item.name}</p>
+                        <p className='text-description text-sm line-clamp-1'>
                             {item.description}
                         </p>
                     </div>
@@ -103,12 +103,12 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                 <div className='flex items-center gap-2'>
                     <div className='flex items-center gap-0.5'>
                         {item._count.startups > 0 && (
-                            <Tag variant="neutral" className='rounded-full border-border bg-background text-description'>
+                            <Tag variant="neutral" className='bg-background border-border rounded-full text-description'>
                                 {item._count.startups} {item._count.startups === 1 ? 'startup' : 'startups'}
                             </Tag>
                         )}
                         {!item.visible &&
-                            <Tag variant="neutral" className='rounded-full border-border bg-background text-description'>
+                            <Tag variant="neutral" className='bg-background border-border rounded-full text-description'>
                                 Hidden
                             </Tag>
                         }
@@ -126,7 +126,7 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                                 disabled={!item.visible}
                                 variant="secondary"
                                 size="small"
-                                className='hidden rounded-r-none border-r-0 sm:flex'
+                                className='hidden sm:flex border-r-0 rounded-r-none'
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -144,7 +144,7 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                                 disabled={!item.visible}
                                 variant="secondary"
                                 size="small"
-                                className='hidden rounded-none border-r-0 sm:flex'
+                                className='hidden sm:flex border-r-0 rounded-none'
                                 onClick={copyToClipboard}
                             >
                                 {copied ? <CheckIcon /> : <LinkIcon />}
@@ -152,8 +152,8 @@ const DashboardCard = ({ item }: DashboardCardProps) => {
                         </Tooltip>
                         <DropdownMenu>
                             <DropdownMenuTrigger className={cn('rounded-r-lg rounded-l-lg sm:rounded-l-none', focusRing)}>
-                                <div className='relative flex size-8 cursor-pointer items-center justify-center whitespace-nowrap rounded-r-lg rounded-l-lg border border-item bg-item px-2 text-sm shadow-sm transition-all duration-100 ease-in-out hover:bg-item-hover focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:bg-item-active disabled:pointer-events-none disabled:border-disabled disabled:bg-neutral-disabled disabled:text-disabled disabled:shadow-none sm:rounded-l-none'>
-                                    <MoreHorizontal className='h-4 w-4' />
+                                <div className='relative flex justify-center items-center bg-item hover:bg-item-hover active:bg-item-active disabled:bg-neutral-disabled shadow-sm disabled:shadow-none px-2 border border-item disabled:border-disabled rounded-r-lg rounded-l-lg sm:rounded-l-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 size-8 disabled:text-disabled text-sm whitespace-nowrap transition-all duration-100 ease-in-out cursor-pointer disabled:pointer-events-none'>
+                                    <MoreHorizontal className='w-4 h-4' />
                                 </div>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
@@ -182,10 +182,10 @@ export default DashboardCard;
 
 export const DashboardCardSkeleton = () => {
     return (
-        <div className='group flew-row flex items-center gap-3 rounded-xl py-2 pr-4 pl-3'>
-            <Skeleton className='size-10 rounded-xl' />
-            <div className='flex w-full flex-row items-center gap-2'>
-                <Skeleton className='h-5 w-full rounded-md' />
+        <div className='group flex items-center gap-3 py-2 pr-4 pl-3 rounded-xl flew-row'>
+            <Skeleton className='rounded-xl size-10' />
+            <div className='flex flex-row items-center gap-2 w-full'>
+                <Skeleton className='rounded-md w-full h-5' />
             </div>
         </div>);
 }; 

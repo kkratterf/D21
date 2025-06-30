@@ -6,11 +6,12 @@ import { Button } from '@d21/design-system/components/ui/button'
 import { toast } from '@d21/design-system/components/ui/toast'
 import { Tooltip } from '@d21/design-system/components/ui/tooltip'
 import { useIsMobile } from '@d21/design-system/hooks/useMobile'
-import { CheckIcon, Globe, LinkIcon } from 'lucide-react'
+import { CheckIcon, LinkIcon, MapPin, } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
 interface DirectoryHeaderProps {
+    shared?: boolean
     slug: string
     directory?: {
         id: string
@@ -21,15 +22,19 @@ interface DirectoryHeaderProps {
     } | null
 }
 
-export function DirectoryHeader({ directory }: DirectoryHeaderProps) {
+export function DirectoryHeader({ directory, shared = false }: DirectoryHeaderProps) {
     const [isSubmitSheetOpen, setIsSubmitSheetOpen] = useState(false)
     const [copied, setCopied] = useState(false)
     const isMobile = useIsMobile()
 
     const handleShare = async () => {
         try {
-            const currentUrl = window.location.href
-            await navigator.clipboard.writeText(currentUrl)
+            if (!directory) {
+                toast.error('Directory not found')
+                return
+            }
+            const directoryUrl = `https://www.d21.so/s/${directory.slug}`
+            await navigator.clipboard.writeText(directoryUrl)
             setCopied(true)
             toast('📣 Copied to clipboard! Ready to share')
             setTimeout(() => setCopied(false), 5000)
@@ -78,8 +83,8 @@ export function DirectoryHeader({ directory }: DirectoryHeaderProps) {
                 </Tooltip>
                 <Tooltip content="Map view">
                     <Button variant="secondary" icon asChild>
-                        <Link href={`/${directory.slug}/map`}>
-                            <Globe />
+                        <Link href={shared ? `/s/${directory.slug}/map` : `/${directory.slug}/map`}>
+                            <MapPin />
                         </Link>
                     </Button>
                 </Tooltip>

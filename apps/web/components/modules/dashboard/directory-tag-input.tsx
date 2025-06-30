@@ -45,7 +45,7 @@ export function DirectoryTagInput({ form }: DirectoryTagInputProps) {
                 const tags = await getUserDirectoryTags()
                 setAvailableTags(tags)
             } catch (error) {
-                // Errore nel caricamento dei tag
+                // Error loading tags
             } finally {
                 setIsLoading(false)
             }
@@ -130,7 +130,7 @@ export function DirectoryTagInput({ form }: DirectoryTagInputProps) {
                 <CommandItem
                     onSelect={handleCreateTag}
                 >
-                    Crea "{searchValue}"
+                    Create "{searchValue}"
                 </CommandItem>
             </CommandGroup>
         )
@@ -165,12 +165,12 @@ export function DirectoryTagInput({ form }: DirectoryTagInputProps) {
                                                         <Tag
                                                             key={tag}
                                                             variant="neutral"
-                                                            className='flex items-center gap-0.5 bg-background border-border rounded-full text-description'
+                                                            className='flex items-center gap-0.5 rounded-full border-border bg-background text-description'
                                                         >
                                                             {tag}
                                                             <div
                                                                 aria-label={`Remove ${tag} tag`}
-                                                                className='flex justify-center items-center bg-transparent hover:bg-transparent p-0 border-0 w-4 h-4 cursor-pointer'
+                                                                className='flex h-4 w-4 cursor-pointer items-center justify-center border-0 bg-transparent p-0 hover:bg-transparent'
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleTagRemove(tag);
@@ -192,7 +192,7 @@ export function DirectoryTagInput({ form }: DirectoryTagInputProps) {
                                             )}
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className='p-0 w-[--radix-popover-trigger-width]'>
+                                    <PopoverContent className='w-[--radix-popover-trigger-width] p-0'>
                                         <Command>
                                             <CommandInput
                                                 placeholder="Search or create tag..."

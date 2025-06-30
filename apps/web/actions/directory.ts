@@ -195,10 +195,10 @@ export async function createDirectoryAction(formData: FormData) {
     const latitude = formData.get('latitude') ? Number.parseFloat(formData.get('latitude') as string) : null
     const slug = formData.get('slug') as string
 
-    // Verifica che lo slug sia univoco
+    // Check if the slug is unique
     const isSlugUnique = await checkSlugUniqueness(slug)
     if (!isSlugUnique) {
-        throw new Error('Slug già esistente. Scegli un altro slug.')
+        throw new Error('Slug already exists. Choose a different slug.')
     }
 
     await prisma.directory.create({
@@ -339,7 +339,7 @@ export async function getDirectoryTags() {
         }
     });
 
-    // Estrai tutti i tag e rimuovi duplicati
+    // Extract all tags and remove duplicates
     const allTags = directories
         .flatMap(directory => directory.tags)
         .filter((tag): tag is string => tag !== null && tag !== undefined)
@@ -404,7 +404,7 @@ export async function getUserDirectoryTags() {
         }
     });
 
-    // Estrai tutti i tag e rimuovi duplicati
+    // Extract all tags and remove duplicates
     const allTags = directories
         .flatMap(directory => directory.tags)
         .filter((tag): tag is string => tag !== null && tag !== undefined)
@@ -437,7 +437,13 @@ export async function updateDirectoryAction(formData: FormData) {
     const latitude = formData.get('latitude') ? Number.parseFloat(formData.get('latitude') as string) : null
     const slug = formData.get('slug') as string
 
-    // Verifica che la directory esista e che l'utente abbia accesso
+    // Check if the slug is unique
+    const isSlugUnique = await checkSlugUniqueness(slug)
+    if (!isSlugUnique) {
+        throw new Error('Slug already exists. Choose a different slug.')
+    }
+
+    // Check if the directory exists and the user has access
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -445,7 +451,7 @@ export async function updateDirectoryAction(formData: FormData) {
         throw new Error('Not authenticated')
     }
 
-    // Verifica che la directory esista e che l'utente abbia accesso
+    // Check if the directory exists and the user has access
     const existingDirectory = await prisma.directory.findUnique({
         where: { id: directoryId }
     })
@@ -454,7 +460,7 @@ export async function updateDirectoryAction(formData: FormData) {
         throw new Error('Directory not found')
     }
 
-    // Verifica che l'utente abbia accesso alla directory usando l'ID
+    // Check if the user has access to the directory using the ID
     if (existingDirectory.userId !== user.id) {
         throw new Error('You do not have access to this directory')
     }
@@ -474,7 +480,7 @@ export async function updateDirectoryAction(formData: FormData) {
         }
     })
 
-    // Revalidate le pagine che potrebbero essere influenzate
+    // Revalidate the pages that could be affected
     revalidatePath('/')
     revalidatePath('/dashboard')
     revalidatePath(`/dashboard/${existingDirectory.slug}`)

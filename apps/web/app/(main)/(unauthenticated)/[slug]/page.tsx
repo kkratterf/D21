@@ -138,17 +138,17 @@ export default async function SlugPage({ params, searchParams }: SlugPageProps) 
 
     return (
         <div className="flex flex-col pt-6">
-            {/* Header con skeleton - il controllo della directory è qui */}
+            {/* Header with skeleton - the directory check is here */}
             <Suspense fallback={<DirectoryHeaderSkeleton />}>
                 <DirectoryHeaderWrapper slug={slug} />
             </Suspense>
 
-            {/* Filtri con skeleton - caricamento parallelo */}
+            {/* Filters with skeleton - parallel loading */}
             <Suspense fallback={<StartupFiltersSkeleton />}>
                 <StartupFiltersWrapper slug={slug} />
             </Suspense>
 
-            {/* Lista startup con skeleton - caricamento parallelo */}
+            {/* Startup list with skeleton - parallel loading */}
             <Suspense fallback={<Loading />}>
                 <ScrollToTop />
                 <StartupListWrapper

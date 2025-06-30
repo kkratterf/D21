@@ -6,7 +6,7 @@ import { Button } from '@d21/design-system/components/ui/button'
 import { Tag } from '@d21/design-system/components/ui/tag'
 import { toast } from '@d21/design-system/components/ui/toast'
 import { Tooltip } from '@d21/design-system/components/ui/tooltip'
-import { CheckIcon, Globe, LinkIcon } from 'lucide-react'
+import { CheckIcon, ExternalLink, LinkIcon, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -33,8 +33,12 @@ export function AdminDirectoryHeader({ directory }: AdminDirectoryHeaderProps) {
 
     const handleShare = async () => {
         try {
-            const currentUrl = window.location.href
-            await navigator.clipboard.writeText(currentUrl)
+            if (!directory) {
+                toast.error('Directory not found')
+                return
+            }
+            const directoryUrl = `https://www.d21.so/s/${directory.slug}`
+            await navigator.clipboard.writeText(directoryUrl)
             setCopied(true)
             toast('📣 Copied to clipboard! Ready to share')
             setTimeout(() => setCopied(false), 5000)
@@ -75,7 +79,7 @@ export function AdminDirectoryHeader({ directory }: AdminDirectoryHeaderProps) {
                     <p className='line-clamp-1 w-full text-description'>{directory.description}</p>
                 )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
                 <div className='hidden gap-0.5 md:flex'>
                     <Tag className='rounded-full border-border bg-background text-description' variant="neutral">
                         {visibleCount} visible
@@ -84,6 +88,17 @@ export function AdminDirectoryHeader({ directory }: AdminDirectoryHeaderProps) {
                         {hiddenCount} hidden
                     </Tag>
                 </div>
+                <Tooltip content="Preview">
+                    <Button
+                        variant="secondary"
+                        icon
+                        asChild
+                    >
+                        <Link href={`/s/${directory.slug}`} target='_blank'>
+                            <ExternalLink />
+                        </Link>
+                    </Button>
+                </Tooltip>
                 <Tooltip content={copied ? "Url copied" : "Copy url"}>
                     <Button
                         variant="secondary"
@@ -96,7 +111,7 @@ export function AdminDirectoryHeader({ directory }: AdminDirectoryHeaderProps) {
                 <Tooltip content="Map view">
                     <Button variant="secondary" icon asChild>
                         <Link href={`/${directory.slug}/map`}>
-                            <Globe />
+                            <MapPin />
                         </Link>
                     </Button>
                 </Tooltip>

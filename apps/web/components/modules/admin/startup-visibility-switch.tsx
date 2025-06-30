@@ -16,7 +16,7 @@ export function StartupVisibilitySwitch({ startupId, isVisible }: StartupVisibil
     const [optimisticVisible, setOptimisticVisible] = useState(isVisible);
 
     const handleToggle = () => {
-        // Aggiorna immediatamente l'UI
+        // Update the UI immediately
         setOptimisticVisible(!optimisticVisible);
 
         startTransition(async () => {
@@ -24,7 +24,7 @@ export function StartupVisibilitySwitch({ startupId, isVisible }: StartupVisibil
             if (result.success && result.visible !== undefined) {
                 toast(result.message);
             } else {
-                // Se l'operazione fallisce, ripristina lo stato precedente
+                // If the operation fails, restore the previous state
                 setOptimisticVisible(isVisible);
                 toast.error(result.message);
             }

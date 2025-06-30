@@ -134,12 +134,7 @@ export function Filter({
                                             <span className={cn('text line-clamp-1 w-full px-1', isSelected && "text-brand")}>
                                                 {option.label}
                                             </span>
-                                            {/* TODO: Remove this tag and build a proper logic to handle this */}
-                                            {option.label === "Founded by Women" && (
-                                                <Tag variant="brand" className='absolute right-9 ml-2 text-xs'>
-                                                    New
-                                                </Tag>
-                                            )}
+
                                             {isSelected && <Check className='h-4 w-4 stroke-icon-brand' />}
                                         </div>
                                     </CommandItem>

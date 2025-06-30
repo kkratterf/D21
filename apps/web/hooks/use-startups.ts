@@ -1,34 +1,6 @@
 import { getVisibleStartupsBySlug } from "@/actions/startup";
+import type { Startup } from "@/types/startup";
 import { useEffect, useState } from "react";
-
-interface Startup {
-    id: string;
-    name: string;
-    shortDescription?: string;
-    longDescription?: string | null;
-    latitude: number;
-    longitude: number;
-    logo?: string;
-    industry?: string;
-    address?: string;
-    website?: string;
-    founded?: number;
-    employees?: string;
-    funding?: string;
-    logoUrl?: string;
-    location?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-    slug?: string;
-    tags?: string[];
-    teamSize?: { name: string } | null;
-    fundingStage?: { name: string } | null;
-    directory?: {
-        id: string;
-        name: string;
-        slug: string;
-    };
-}
 
 export function useStartups(directorySlug = "C14") {
     const [startups, setStartups] = useState<Startup[]>([]);
@@ -40,10 +12,10 @@ export function useStartups(directorySlug = "C14") {
             try {
                 setLoading(true);
 
-                // Carica le startup reali dalla directory specificata
+                // Load real startups from the specified directory
                 const realStartups = await getVisibleStartupsBySlug(directorySlug);
 
-                // Mappa i dati per compatibilità con l'interfaccia Startup
+                // Map data for compatibility with the Startup interface
                 const mappedStartups: Startup[] = realStartups.map(startup => ({
                     id: startup.id,
                     name: startup.name,
@@ -51,18 +23,23 @@ export function useStartups(directorySlug = "C14") {
                     longDescription: startup.longDescription,
                     latitude: startup.latitude,
                     longitude: startup.longitude,
-                    logo: startup.logoUrl || undefined,
-                    logoUrl: startup.logoUrl || undefined,
+                    logoUrl: startup.logoUrl,
                     location: startup.location,
-                    website: startup.websiteUrl || undefined,
-                    founded: startup.foundedAt ? new Date(startup.foundedAt).getFullYear() : undefined,
-                    employees: startup.teamSize?.name,
-                    funding: startup.fundingStage?.name,
-                    industry: startup.tags?.[0], // Usa il primo tag come industria
+                    websiteUrl: startup.websiteUrl,
+                    foundedAt: startup.foundedAt,
+                    teamSizeId: startup.teamSizeId,
+                    fundingStageId: startup.fundingStageId,
+                    contactEmail: startup.contactEmail,
+                    linkedinUrl: startup.linkedinUrl,
+                    metadata: startup.metadata,
+                    tags: startup.tags,
                     createdAt: startup.createdAt,
                     updatedAt: startup.updatedAt,
+                    directoryId: startup.directoryId,
+                    visible: startup.visible,
+                    amountRaised: startup.amountRaised,
+                    currency: startup.currency,
                     slug: startup.slug,
-                    tags: startup.tags,
                     teamSize: startup.teamSize,
                     fundingStage: startup.fundingStage,
                     directory: startup.directory
@@ -71,8 +48,8 @@ export function useStartups(directorySlug = "C14") {
                 setStartups(mappedStartups);
                 setError(null);
             } catch (err) {
-                console.error('Errore nel caricamento delle startup:', err);
-                setError(err instanceof Error ? err.message : "Errore nel caricamento delle startup");
+                console.error('Error loading startups:', err);
+                setError(err instanceof Error ? err.message : "Error loading startups");
             } finally {
                 setLoading(false);
             }

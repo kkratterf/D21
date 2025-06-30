@@ -20,9 +20,10 @@ interface StartupListProps {
     tags?: string[]
     fundingStages?: string[]
     teamSizes?: string[]
+    shared?: boolean
 }
 
-export function StartupList({ startups, tags = [], fundingStages = [], teamSizes = [] }: StartupListProps) {
+export function StartupList({ startups, tags = [], fundingStages = [], teamSizes = [], shared = false }: StartupListProps) {
     if (startups.length === 0) {
         return (
             <Empty
@@ -33,7 +34,7 @@ export function StartupList({ startups, tags = [], fundingStages = [], teamSizes
     }
 
     return (
-        <div className='flex h-full w-full flex-col gap-1 px-3 py-4'>
+        <div className='flex flex-col gap-1 px-3 py-4 w-full h-full'>
             {startups.map((startup) => (
                 <StartupCard
                     key={startup.id}
@@ -41,6 +42,7 @@ export function StartupList({ startups, tags = [], fundingStages = [], teamSizes
                     selectedTags={tags}
                     selectedFundingStages={fundingStages}
                     selectedTeamSizes={teamSizes}
+                    shared={shared}
                 />
             ))}
         </div>
