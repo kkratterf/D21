@@ -1,5 +1,6 @@
 'use server'
 
+import { handleServerActionError } from '@/lib/error-handler'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import type { GetStartups, StartupOrder } from '@/types/startup'
@@ -125,92 +126,96 @@ export const getStartups = async ({
 }
 
 export async function createStartupAction(formData: FormData) {
-    const directoryId = formData.get('directoryId') as string
+    try {
+        const directoryId = formData.get('directoryId') as string
 
-    const directory = await prisma.directory.findUnique({
-        where: {
-            slug: directoryId
-        }
-    })
-
-    if (!directory) {
-        throw new Error('Directory not found')
-    }
-
-    const name = formData.get('name') as string
-    const shortDescription = formData.get('shortDescription') as string
-    const longDescription = formData.get('longDescription') ? (formData.get('longDescription') as string) : null
-    const websiteUrl = formData.get('websiteUrl') as string
-    let logoUrl = formData.get('logoUrl') ? (formData.get('logoUrl') as string) : null
-    const foundedAt = formData.get('foundedAt') ? new Date(formData.get('foundedAt') as string) : null
-    const location = (formData.get('location') as string) || ''
-    const longitude = formData.get('longitude') ? Number.parseFloat(formData.get('longitude') as string) : 0
-    const latitude = formData.get('latitude') ? Number.parseFloat(formData.get('latitude') as string) : 0
-    const teamSizeId = formData.get('teamSizeId') as string
-    const fundingStageId = formData.get('fundingStageId') as string
-    const contactEmail = formData.get('contactEmail') ? (formData.get('contactEmail') as string) : null
-    const linkedinUrl = formData.get('linkedinUrl') as string
-    const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
-    const amountRaised = formData.get('amountRaised') ? new Decimal(formData.get('amountRaised') as string) : null
-    const currency = formData.get('currency') && (formData.get('currency') as string).trim() ? (formData.get('currency') as string).trim() : null
-
-    // Process logo URL if provided
-    if (logoUrl && logoUrl.trim() !== '') {
-        try {
-            logoUrl = await processImageUrl(logoUrl);
-        } catch (error) {
-            console.error('Error processing logo:', error);
-            // If upload fails, continue without logo
-            logoUrl = null;
-        }
-    }
-
-    // Generate unique slug
-    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-    let slug = baseSlug
-    let counter = 1
-
-    // Check if slug exists and generate a unique one
-    while (true) {
-        const existingStartup = await prisma.startup.findUnique({
-            where: { slug }
+        const directory = await prisma.directory.findUnique({
+            where: {
+                slug: directoryId
+            }
         })
 
-        if (!existingStartup) {
-            break
+        if (!directory) {
+            throw new Error('Directory not found')
         }
 
-        slug = `${baseSlug}-${counter}`
-        counter++
+        const name = formData.get('name') as string
+        const shortDescription = formData.get('shortDescription') as string
+        const longDescription = formData.get('longDescription') ? (formData.get('longDescription') as string) : null
+        const websiteUrl = formData.get('websiteUrl') as string
+        let logoUrl = formData.get('logoUrl') ? (formData.get('logoUrl') as string) : null
+        const foundedAt = formData.get('foundedAt') ? new Date(formData.get('foundedAt') as string) : null
+        const location = (formData.get('location') as string) || ''
+        const longitude = formData.get('longitude') ? Number.parseFloat(formData.get('longitude') as string) : 0
+        const latitude = formData.get('latitude') ? Number.parseFloat(formData.get('latitude') as string) : 0
+        const teamSizeId = formData.get('teamSizeId') as string
+        const fundingStageId = formData.get('fundingStageId') as string
+        const contactEmail = formData.get('contactEmail') ? (formData.get('contactEmail') as string) : null
+        const linkedinUrl = formData.get('linkedinUrl') as string
+        const tags = (formData.get('tags') as string).split(',').map(tag => tag.trim())
+        const amountRaised = formData.get('amountRaised') ? new Decimal(formData.get('amountRaised') as string) : null
+        const currency = formData.get('currency') && (formData.get('currency') as string).trim() ? (formData.get('currency') as string).trim() : null
+
+        // Process logo URL if provided
+        if (logoUrl && logoUrl.trim() !== '') {
+            try {
+                logoUrl = await processImageUrl(logoUrl);
+            } catch (error) {
+                console.error('Error processing logo:', error);
+                // If upload fails, continue without logo
+                logoUrl = null;
+            }
+        }
+
+        // Generate unique slug
+        const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+        let slug = baseSlug
+        let counter = 1
+
+        // Check if slug exists and generate a unique one
+        while (true) {
+            const existingStartup = await prisma.startup.findUnique({
+                where: { slug }
+            })
+
+            if (!existingStartup) {
+                break
+            }
+
+            slug = `${baseSlug}-${counter}`
+            counter++
+        }
+
+        await prisma.startup.create({
+            data: {
+                name,
+                shortDescription,
+                longDescription,
+                websiteUrl,
+                logoUrl,
+                slug,
+                foundedAt,
+                location,
+                longitude,
+                latitude,
+                teamSizeId,
+                fundingStageId,
+                contactEmail,
+                linkedinUrl,
+                tags,
+                amountRaised,
+                currency,
+                directoryId: directory.id,
+                visible: false
+            }
+        })
+
+        revalidatePath(`/dashboard/${directory.slug}`)
+
+        return { success: true }
+    } catch (error) {
+        return handleServerActionError(error, 'createStartupAction');
     }
-
-    await prisma.startup.create({
-        data: {
-            name,
-            shortDescription,
-            longDescription,
-            websiteUrl,
-            logoUrl,
-            slug,
-            foundedAt,
-            location,
-            longitude,
-            latitude,
-            teamSizeId,
-            fundingStageId,
-            contactEmail,
-            linkedinUrl,
-            tags,
-            amountRaised,
-            currency,
-            directoryId: directory.id,
-            visible: false
-        }
-    })
-
-    revalidatePath(`/dashboard/${directory.slug}`)
-
-    return { success: true }
 }
 
 export async function updateStartupAction(formData: FormData) {
@@ -336,10 +341,7 @@ export async function toggleStartupVisibility(startupId: string) {
             startupId: updatedStartup.id
         }
     } catch (error) {
-        return {
-            success: false,
-            message: error instanceof Error ? error.message : 'An unexpected error occurred'
-        }
+        return handleServerActionError(error, 'toggleStartupVisibility');
     }
 }
 
@@ -477,10 +479,7 @@ export async function deleteStartup(startupId: string) {
             message: '🗑️ Startup deleted successfully'
         }
     } catch (error) {
-        return {
-            success: false,
-            message: error instanceof Error ? error.message : 'An unexpected error occurred'
-        }
+        return handleServerActionError(error, 'deleteStartup');
     }
 }
 
