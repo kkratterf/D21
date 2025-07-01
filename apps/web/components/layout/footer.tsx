@@ -10,9 +10,12 @@ import { cn, focusRing } from '@d21/design-system/lib/utils';
 const Footer = () => {
   return (
     <footer className='flex w-full justify-between border-border border-t px-2 pt-4'>
-      <Link href="/" className={cn('rounded-lg', focusRing)}>
-        <Pictogram size={32} />
-      </Link>
+      <div className='flex items-center gap-4'>
+        <Link href="/" className={cn('rounded-lg', focusRing)}>
+          <Pictogram size={32} />
+        </Link>
+        <Link href="/privacy" className={cn('hover:text rounded-lg text-description text-sm', focusRing)}>Privacy Policy</Link>
+      </div>
       <div className="flex flex-row gap-1">
         <Tooltip content="Join our community">
           <Button variant="text" icon size="small" asChild>
