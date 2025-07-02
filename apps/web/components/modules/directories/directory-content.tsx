@@ -63,6 +63,7 @@ export async function DirectoryContent({
                     }}
                     totalPages={pages}
                     totalResults={total}
+                    basePath={`/${slug}`}
                 />
             </Suspense>
         </>

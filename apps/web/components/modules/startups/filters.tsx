@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowDownAZ, ArrowDownNarrowWide, ArrowDownWideNarrow, ArrowDownZA, DollarSign, type LucideIcon, Tags, Users, X } from 'lucide-react';
-import { useRouter, useSearchParams, } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useOptimistic, useTransition } from 'react';
 
 import { Button } from '@d21/design-system/components/ui/button';
@@ -61,6 +61,7 @@ const StartupsFiltersWithParams = ({
     directorySlug,
 }: IProps) => {
     const router = useRouter();
+    const pathname = usePathname();
     const [isPending, startTransition] = useTransition();
 
     // Parse search params
@@ -81,8 +82,7 @@ const StartupsFiltersWithParams = ({
 
     const updateURL = (newFilters: StartupSearchParams) => {
         const queryString = stringifyStartupSearchParams(newFilters);
-        const currentPath = window.location.pathname;
-        router.replace(queryString ? `${currentPath}?${queryString}` : currentPath, {
+        router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
             scroll: false
         });
     };
@@ -138,16 +138,16 @@ const StartupsFiltersWithParams = ({
     };
 
     return (
-        <div className='sticky top-0 z-20 border-border border-b bg-background px-6 py-4'>
-            <div className='flex flex-col items-center justify-between gap-2 md:flex-row'>
-                <div className='flex w-full flex-col items-center gap-2 md:flex-row'>
+        <div className='top-0 z-20 sticky bg-background px-6 py-4 border-b border-border'>
+            <div className='flex md:flex-row flex-col justify-between items-center gap-2'>
+                <div className='flex md:flex-row flex-col items-center gap-2 w-full'>
                     <Input
                         placeholder="Search startups..."
                         className="w-full md:max-w-64 xl:max-w-72"
                         value={optimisticFilters.name ?? ""}
                         onChange={(e) => handleFilterChange('name', e.target.value)}
                     />
-                    <div className='flex w-full flex-row gap-2 md:w-auto'>
+                    <div className='flex flex-row gap-2 w-full md:w-auto'>
                         <Filter
                             icon={<Tags />}
                             title="Tags"
@@ -174,7 +174,7 @@ const StartupsFiltersWithParams = ({
                         />
                     </div>
                     {hasActiveFilters() && (
-                        <Tooltip content="Reset filters" className='z-50 hidden md:flex 2xl:hidden'>
+                        <Tooltip content="Reset filters" className='hidden 2xl:hidden z-50 md:flex'>
                             <Button
                                 className="w-full md:w-auto"
                                 variant="text"
@@ -186,8 +186,8 @@ const StartupsFiltersWithParams = ({
                                     });
                                 }}
                             >
-                                <X className='hidden md:flex 2xl:hidden' />
-                                <span className='flex md:hidden 2xl:flex'>Reset</span>
+                                <X className='hidden 2xl:hidden md:flex' />
+                                <span className='md:hidden flex 2xl:flex'>Reset</span>
                             </Button>
                         </Tooltip>
                     )}
@@ -221,13 +221,13 @@ export default StartupFilters;
 
 export const StartupFiltersSkeleton = () => {
     return (
-        <div className='sticky top-0 z-20 border-border border-b bg-background px-6 py-4'>
-            <div className='flex w-full flex-col items-center gap-2 md:flex-row'>
-                <Skeleton className='h-9 w-full md:max-w-64' />
-                <div className='flex w-full flex-row gap-2 md:w-auto'>
-                    <Skeleton className='h-9 w-full md:w-[38px]' />
-                    <Skeleton className='h-9 w-full md:w-[38px]' />
-                    <Skeleton className='h-9 w-full md:w-[38px]' />
+        <div className='top-0 z-20 sticky bg-background px-6 py-4 border-b border-border'>
+            <div className='flex md:flex-row flex-col items-center gap-2 w-full'>
+                <Skeleton className='w-full md:max-w-64 h-9' />
+                <div className='flex flex-row gap-2 w-full md:w-auto'>
+                    <Skeleton className='w-full md:w-[38px] h-9' />
+                    <Skeleton className='w-full md:w-[38px] h-9' />
+                    <Skeleton className='w-full md:w-[38px] h-9' />
                 </div>
             </div>
         </div>

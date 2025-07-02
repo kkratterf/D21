@@ -121,6 +121,7 @@ async function StartupListWrapper({
                 }}
                 totalPages={pages}
                 totalResults={total}
+                basePath={`/s/${slug}`}
             />
         </>
     )
